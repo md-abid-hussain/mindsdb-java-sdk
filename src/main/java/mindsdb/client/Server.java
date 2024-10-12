@@ -7,19 +7,21 @@ import com.google.gson.JsonObject;
 
 import kong.unirest.core.json.JSONObject;
 import mindsdb.connectors.RestAPI;
-import mindsdb.services.Agents;
-import mindsdb.services.Skills;
+import mindsdb.models.Database;
+import mindsdb.models.Handler;
+import mindsdb.models.Project;
+import mindsdb.models.skill.Skill;
 
 public class Server extends Project {
     private final Databases databases;
     private final MLEngines mlEngines;
     private final MLHandlers mlHandlers;
     private final DataHandlers dataHandlers;
-    private Agents agents;
+    // private Agents agents;
     private Skills skills;
 
     private final Projects projects;
-    public final RestAPI api;
+    private final RestAPI api;
 
     public Server(RestAPI api) {
         super("mindsdb", api);
@@ -109,6 +111,15 @@ public class Server extends Project {
 
     public void dropDatabase(String name) {
         databases.drop(name);
+    }
+
+    // Skills
+    public List<Skill> listSkills() {
+        return skills.list();
+    }
+
+    public RestAPI getApi() {
+        return api;
     }
 
 }

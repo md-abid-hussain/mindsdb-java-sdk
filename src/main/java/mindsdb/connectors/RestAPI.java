@@ -15,6 +15,7 @@ import kong.unirest.core.JsonNode;
 import kong.unirest.core.Unirest;
 import kong.unirest.core.UnirestException;
 import kong.unirest.core.UnirestInstance;
+import kong.unirest.core.json.JSONArray;
 import kong.unirest.core.json.JSONObject;
 import lombok.NoArgsConstructor;
 import mindsdb.utils.DataFrame;
@@ -132,8 +133,8 @@ public final class RestAPI {
             // System.out.println(data);
 
             if (data.getString("type").equals("table")) {
-                var columns = data.getJSONArray("column_names");
-                var rows = data.getJSONArray("data");
+                JSONArray columns = data.getJSONArray("column_names");
+                JSONArray rows = data.getJSONArray("data");
                 DataFrame df = new DataFrame(columns, rows);
 
                 return df;

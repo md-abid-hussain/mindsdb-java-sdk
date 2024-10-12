@@ -1,29 +1,25 @@
 package mindsdb;
 
-import mindsdb.client.ApiConfig;
-import mindsdb.models.ServerStatus;
-import mindsdb.services.*;
-
-import java.io.IOException;
+import mindsdb.client.Server;
 
 public class Main {
 
-    public static void main(String[] args) throws Exception {
-//        String url = "https://cloud.mindsdb.com";
-        String url = "http://127.0.0.1:47334";
-        String user = null;
-        String password = null;
-        ApiConfig apiConfig = ApiConfig.builder().user(user).url(url).managed(false).password(password).build();
-        MindsDb.init(apiConfig);
-//        ServerStatus serverStatus = Server.status();
-//        System.out.println(serverStatus);
-//        System.out.println(serverStatus);
-        String query = "select NAME, ENGINE from information_schema.databases where TYPE='data'";
-//        Query.builder().sqlQueryString(query).build().execute();
-//        System.out.println(Projects.list());
-//        System.out.println(Projects.get("mindsdb"));
-//        System.out.println(Databases.list());
-//        System.out.println(Models.list("mindsdb"));
-        System.out.println(Models.get("mindsdb", "stability_image_generation"));
-    }
+        public static void main(String[] args) {
+                Server server = MindsDB.connect();
+                System.out.println(server.listDatabases());
+
+                // Database slack = server.getDatabase("slack");
+                // System.out.println(slack);
+
+                // var q = slack.query("select * from messages");
+                // System.out.println(q.fetch());
+
+                // Database maria = server.createDatabase("maria", "mysql", Map.of("host",
+                // "localhost", "port", "3306",
+                // "user", "user", "password", "root", "database", "databasee"));
+                // System.out.println(maria);
+
+                server.dropDatabase("maria");
+                System.out.println(server.listDatabases());
+        }
 }
