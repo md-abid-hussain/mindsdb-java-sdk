@@ -3,9 +3,9 @@ package mindsdb.models;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import mindsdb.client.Jobs;
-import mindsdb.client.Query;
 import mindsdb.connectors.RestAPI;
+import mindsdb.services.Jobs;
+import mindsdb.services.Query;
 
 public class Project {
     private final String name;

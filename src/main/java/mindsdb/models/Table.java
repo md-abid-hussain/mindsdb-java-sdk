@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import mindsdb.client.Query;
 import mindsdb.connectors.RestAPI;
+import mindsdb.services.Query;
 import mindsdb.utils.DataFrame;
 
 public class Table extends Query {

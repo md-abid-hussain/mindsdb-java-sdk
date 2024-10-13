@@ -1,7 +1,7 @@
 package mindsdb.models;
 
-import mindsdb.client.Query;
 import mindsdb.connectors.RestAPI;
+import mindsdb.services.Query;
 
 public class Database {
     // private Server server;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import mindsdb.client.Query;
+import mindsdb.services.Query;
 import mindsdb.utils.CreateJobCallback;
 import mindsdb.utils.DataFrame;
 

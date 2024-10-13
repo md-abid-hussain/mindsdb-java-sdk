@@ -1,4 +1,4 @@
-package mindsdb.client;
+package mindsdb.services;
 
 import mindsdb.connectors.RestAPI;
 

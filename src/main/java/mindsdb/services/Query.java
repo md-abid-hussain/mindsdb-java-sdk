@@ -1,4 +1,4 @@
-package mindsdb.client;
+package mindsdb.services;
 
 import kong.unirest.core.UnirestException;
 import mindsdb.connectors.RestAPI;

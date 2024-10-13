@@ -2,8 +2,8 @@ package mindsdb;
 
 import java.util.Map;
 
-import mindsdb.client.Server;
 import mindsdb.connectors.RestAPI;
+import mindsdb.services.Server;
 
 public class MindsDB {
     private static final String DEFAULT_LOCAL_API_URL = "http://127.0.0.1:47334";

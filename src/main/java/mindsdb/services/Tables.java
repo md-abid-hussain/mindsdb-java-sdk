@@ -1,4 +1,4 @@
-package mindsdb.client;
+package mindsdb.services;
 
 import java.util.List;
 
