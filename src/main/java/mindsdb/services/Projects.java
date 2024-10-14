@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Project;
-import mindsdb.utils.DataFrame;
 
 public class Projects {
     private final RestAPI api;
@@ -17,11 +16,13 @@ public class Projects {
     }
 
     private List<String> _listProjects() {
-        DataFrame response = api
+        tech.tablesaw.api.Table response = api
                 .sqlQuery("SELECT NAME FROM information_schema.databases WHERE TYPE='project'");
-        return response.getColumn("NAME").stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
+        // return response.getColumn("NAME").stream()
+        // .map(Object::toString)
+        // .collect(Collectors.toList());
+
+        return response.stream().map(row -> row.getString("NAME")).collect(Collectors.toList());
     }
 
     public List<Project> list() {

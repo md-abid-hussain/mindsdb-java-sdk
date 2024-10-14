@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import kong.unirest.core.json.JSONObject;
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Handler;
-import mindsdb.utils.DataFrame;
+import tech.tablesaw.api.Table;
 
 public class Handlers {
     protected final RestAPI api;
@@ -18,13 +18,21 @@ public class Handlers {
     }
 
     public List<Handler> list() {
-        DataFrame response = api.sqlQuery(String.format("SHOW HANDLERS WHERE TYPE='%s';", type));
-        return response.getRows().stream()
-                .map(row -> {
-                    JSONObject args = new JSONObject(row);
-                    return new Handler(args);
-                })
-                .collect(Collectors.toList());
+        Table response = api.sqlQuery(String.format("SHOW HANDLERS WHERE TYPE='%s';", type));
+        // return response.getRows().stream()
+        // .map(row -> {
+        // JSONObject args = new JSONObject(row);
+        // return new Handler(args);
+        // })
+        // .collect(Collectors.toList());
+
+        return response.stream().map(row -> {
+            JSONObject args = new JSONObject();
+            for (int i = 0; i < row.columnCount(); i++) {
+                args.put(row.columnNames().get(i), row.getString(i));
+            }
+            return new Handler(args);
+        }).collect(Collectors.toList());
     }
 
     public Handler get(String name) {

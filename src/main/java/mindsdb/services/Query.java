@@ -2,11 +2,11 @@ package mindsdb.services;
 
 import kong.unirest.core.UnirestException;
 import mindsdb.connectors.RestAPI;
-import mindsdb.utils.DataFrame;;
+import tech.tablesaw.api.Table;
 
 public class Query {
     private final RestAPI api;
-    public final String sql;
+    public String sql;
     public final String database;
 
     public Query(RestAPI api, String sql, String database) {
@@ -19,7 +19,7 @@ public class Query {
         this(api, sql, null);
     }
 
-    public DataFrame fetch() {
+    public Table fetch() {
         try {
             // Sending the SQL query to the API
             return api.sqlQuery(sql, database);

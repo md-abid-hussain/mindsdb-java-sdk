@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Handler;
-import mindsdb.utils.DataFrame;
+import tech.tablesaw.api.Table;
 
 @Data
 @RequiredArgsConstructor
@@ -26,12 +26,18 @@ class MLEngines {
     }
 
     private List<MLEngine> _listMLEngines() {
-        DataFrame response = api.sqlQuery("SHOW ML_ENGINES;");
-        return response.getRows().stream()
-                .map(row -> new MLEngine(
-                        row.get("NAME").toString(),
-                        row.get("HANDLER").toString(),
-                        new JSONObject(row.get("CONNECTION_DATA").toString())))
+        Table response = api.sqlQuery("SHOW ML_ENGINES;");
+        // return response.getRows().stream()
+        // .map(row -> new MLEngine(
+        // row.get("NAME").toString(),
+        // row.get("HANDLER").toString(),
+        // new JSONObject(row.get("CONNECTION_DATA").toString())))
+        // .collect(Collectors.toList());
+
+        return response.stream().map(row -> new MLEngine(
+                row.getString("NAME"),
+                row.getString("HANDLER"),
+                new JSONObject(row.getString("CONNECTION_DATA"))))
                 .collect(Collectors.toList());
     }
 
@@ -51,8 +57,8 @@ class MLEngines {
             throw new IllegalArgumentException("Handler is required");
         }
 
-        if (handler instanceof Handler) {
-            handler = ((Handler) handler).getName();
+        if (handler instanceof Handler handler1) {
+            handler = handler1.getName();
         }
 
         StringBuilder astQuery = new StringBuilder("CREATE ML_ENGINE IF NOT EXISTS " + name + " FROM " + handler);

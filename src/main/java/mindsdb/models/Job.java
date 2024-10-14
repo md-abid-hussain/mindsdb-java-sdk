@@ -6,7 +6,7 @@ import java.util.Map;
 
 import mindsdb.services.Query;
 import mindsdb.utils.CreateJobCallback;
-import mindsdb.utils.DataFrame;
+import tech.tablesaw.api.Table;
 
 public class Job implements AutoCloseable {
     public final Project project;
@@ -114,7 +114,7 @@ public class Job implements AutoCloseable {
         return this;
     }
 
-    public DataFrame getHistory() {
+    public Table getHistory() {
         String astQuery = String.format("SELECT * FROM log.jobs_history WHERE name = '%s'", name);
         return project.api.sqlQuery(astQuery, project.getName());
     }

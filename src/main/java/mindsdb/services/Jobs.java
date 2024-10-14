@@ -2,6 +2,7 @@ package mindsdb.services;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,7 @@ import mindsdb.connectors.RestAPI;
 import mindsdb.models.Job;
 import mindsdb.models.Project;
 import mindsdb.utils.CreateJobCallback;
-import mindsdb.utils.DataFrame;
+import tech.tablesaw.api.Table;
 
 public class Jobs {
 
@@ -36,20 +37,38 @@ public class Jobs {
             astQuery += String.format(" WHERE name='%s';", name);
         }
 
-        DataFrame response = api.sqlQuery(astQuery, this.project.getName());
+        // DataFrame response = api.sqlQuery(astQuery, this.project.getName());
+        Table response = api.sqlQuery(astQuery, this.project.getName());
 
-        return response.getRows().stream()
-                .map(row -> {
-                    Map<String, String> data = new HashMap<>();
-                    data.put("query", row.get("QUERY") != null ? row.get("QUERY").toString() : null);
-                    data.put("start_at", row.get("START_AT") != null ? row.get("START_AT").toString() : null);
-                    data.put("end_at", row.get("END_AT") != null ? row.get("END_AT").toString() : null);
-                    data.put("schedule_str",
-                            row.get("SCHEDULE_STR") != null ? row.get("SCHEDULE_STR").toString() : null);
-                    Job job = new Job(this.project, row.get("NAME").toString(), data, null);
-                    return job;
-                })
-                .collect(Collectors.toList());
+        if (response == null) {
+            return new ArrayList<>();
+        }
+
+        // return response.getRows().stream()
+        // .map(row -> {
+        // Map<String, String> data = new HashMap<>();
+        // data.put("query", row.get("QUERY") != null ? row.get("QUERY").toString() :
+        // null);
+        // data.put("start_at", row.get("START_AT") != null ?
+        // row.get("START_AT").toString() : null);
+        // data.put("end_at", row.get("END_AT") != null ? row.get("END_AT").toString() :
+        // null);
+        // data.put("schedule_str",
+        // row.get("SCHEDULE_STR") != null ? row.get("SCHEDULE_STR").toString() : null);
+        // Job job = new Job(this.project, row.get("NAME").toString(), data, null);
+        // return job;
+        // })
+        // .collect(Collectors.toList());
+
+        return response.stream().map(row -> {
+            Map<String, String> data = new HashMap<>();
+            data.put("query", row.getString("QUERY"));
+            data.put("start_at", row.getString("START_AT"));
+            data.put("end_at", row.getString("END_AT"));
+            data.put("schedule_str", row.getString("SCHEDULE_STR"));
+            Job job = new Job(this.project, row.getString("NAME"), data, null);
+            return job;
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -89,7 +108,7 @@ public class Jobs {
             Integer repeatMin) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String startStr = (startAt != null) ? " START " + String.format("'%s'", startAt.format(formatter)) : null;
-        String endStr = (endAt != null) ? " END " + endAt.format(formatter) : null;
+        String endStr = (endAt != null) ? " END " + String.format("'%s'", endAt.format(formatter)) : null;
         final String finalRepeatStr = (repeatMin != null) ? " EVERY " + repeatMin + " minutes"
                 : repeatStr != null ? " EVERY " + repeatStr : null;
 
@@ -110,10 +129,6 @@ public class Jobs {
             if (finalRepeatStr != null) {
                 astQuery.append(finalRepeatStr);
             }
-
-            // String astQuery = String.format("CREATE JOB %s WITH QUERY %s START %s END %s
-            // REPEAT %s",
-            // name, query, startStr, endStr, finalRepeatStr);
             api.sqlQuery(astQuery.toString(), project.getName());
         };
 
@@ -124,13 +139,116 @@ public class Jobs {
             createCallback.execute(queryStr);
             List<Job> jobs = this.listJobs(name);
 
-            System.out.println("jobs " + jobs);
             if (jobs.size() == 1) {
                 return jobs.get(0);
             } else {
                 return null;
             }
         }
+    }
+
+    /**
+     * Create job with only name
+     *
+     * @param name name of the job
+     * @return Job object
+     */
+    public Job create(String name) {
+        return create(name, null, null, null, null, null);
+    }
+
+    /**
+     * Create job with name and query string
+     *
+     * @param name     name of the job
+     * @param queryStr query string
+     * @return Job object
+     */
+    public Job create(String name, String queryStr) {
+        return create(name, queryStr, null, null, null, null);
+    }
+
+    /**
+     * Create job with name, query string, start time, and end time
+     *
+     * @param name     name of the job
+     * @param queryStr query string
+     * @param startAt  start time
+     * @param endAt    end time
+     * @return Job object
+     */
+    public Job create(String name, String queryStr, LocalDateTime startAt, LocalDateTime endAt) {
+        return create(name, queryStr, startAt, endAt, null, null);
+    }
+
+    /**
+     * Create job with name, query string, start time, end time, and repeat string
+     *
+     * @param name      name of the job
+     * @param queryStr  query string
+     * @param startAt   start time
+     * @param endAt     end time
+     * @param repeatStr repeat string
+     * @return Job object
+     */
+    public Job create(String name, String queryStr, LocalDateTime startAt, LocalDateTime endAt, String repeatStr) {
+        return create(name, queryStr, startAt, endAt, repeatStr, null);
+    }
+
+    /**
+     * Create job with name and list of query strings
+     *
+     * @param name     name of the job
+     * @param queryStr list of query strings
+     * @return Job object
+     */
+    public Job create(String name, List<String> queryStr) {
+        return create(name, String.join("; ", queryStr), null, null, null, null);
+    }
+
+    /**
+     * Create job with name, list of query strings, start time, and end time
+     *
+     * @param name     name of the job
+     * @param queryStr list of query strings
+     * @param startAt  start time
+     * @param endAt    end time
+     * @return Job object
+     */
+    public Job create(String name, List<String> queryStr, LocalDateTime startAt, LocalDateTime endAt) {
+        return create(name, String.join("; ", queryStr), startAt, endAt, null, null);
+    }
+
+    /**
+     * Create job with name, list of query strings, start time, end time, and repeat
+     * string
+     *
+     * @param name      name of the job
+     * @param queryStr  list of query strings
+     * @param startAt   start time
+     * @param endAt     end time
+     * @param repeatStr repeat string
+     * @return Job object
+     */
+    public Job create(String name, List<String> queryStr, LocalDateTime startAt, LocalDateTime endAt,
+            String repeatStr) {
+        return create(name, String.join("; ", queryStr), startAt, endAt, repeatStr, null);
+    }
+
+    /**
+     * Create job with name, list of query strings, start time, end time, and repeat
+     * minutes
+     *
+     * @param name      name of the job
+     * @param queryStr  list of query strings
+     * @param startAt   start time
+     * @param endAt     end time
+     * @param repeatMin repeat minutes
+     * @return Job object
+     */
+    public Job create(String name, List<String> queryStr, LocalDateTime startAt, LocalDateTime endAt,
+            Integer repeatMin) {
+        return create(name, String.join("; ", queryStr), startAt, endAt, null, repeatMin);
     }
 
     /**
