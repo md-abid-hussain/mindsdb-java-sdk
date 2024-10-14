@@ -16,10 +16,22 @@ public class Handler {
     // Constructor to handle dynamic parameters
     public Handler(JSONObject kwargs) {
         JSONObject normalizedKwargs = new JSONObject();
+        // JSONObject normalizedKwargs = kwargs;
 
         // Normalize keys to lower case
         for (String key : kwargs.keySet()) {
-            normalizedKwargs.put(key.toLowerCase(), kwargs.get(key));
+            switch (key) {
+                case "name", "title", "version", "description" ->
+                    normalizedKwargs.put(key, (String) kwargs.get(key));
+                case "connection_args" ->
+                    normalizedKwargs.put(key,
+                            kwargs.get(key) != null && kwargs.getString(key).length() > 0 ? kwargs.get(key) : null);
+                case "import_success", "import_error" -> {
+                    Object value = kwargs.get(key);
+                    boolean normalizedValue = value != null && !value.toString().equalsIgnoreCase("false");
+                    normalizedKwargs.put(key, normalizedValue);
+                }
+            }
         }
 
         if (normalizedKwargs.has("name")) {
