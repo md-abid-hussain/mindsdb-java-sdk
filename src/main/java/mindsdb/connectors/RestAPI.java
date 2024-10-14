@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import kong.unirest.core.HttpResponse;
@@ -17,10 +18,9 @@ import kong.unirest.core.UnirestException;
 import kong.unirest.core.UnirestInstance;
 import kong.unirest.core.json.JSONArray;
 import kong.unirest.core.json.JSONObject;
-import lombok.NoArgsConstructor;
-import mindsdb.utils.DataFrame;
+import tech.tablesaw.api.StringColumn;
+import tech.tablesaw.api.Table;
 
-@NoArgsConstructor
 public final class RestAPI {
 
     private String url;
@@ -111,7 +111,7 @@ public final class RestAPI {
         }
     }
 
-    public DataFrame sqlQuery(String sql, String database) {
+    public Table sqlQuery(String sql, String database) {
         if (database == null) {
             database = "mindsdb";
         }
@@ -119,30 +119,39 @@ public final class RestAPI {
         String sqlPayload = String.format("{\"query\": \"%s\", \"context\": {\"db\": \"%s\"}}", sql, database);
         System.out.println(sqlPayload);
         try {
-            HttpResponse<JsonNode> response = session.post(endpointUrl)
+            HttpResponse<String> response = session.post(endpointUrl)
                     .header("Content-Type", "application/json")
                     .body(sqlPayload)
-                    .asJson();
+                    .asString();
 
             if (response.getStatus() >= 400) {
                 throw new RuntimeException("SQL Query failed: " + response.getBody().toString());
             }
 
-            JSONObject data = response.getBody().getObject();
-
-            // System.out.println(data);
+            JSONObject data = new JSONObject(response.getBody());
 
             if (data.getString("type").equals("table")) {
                 JSONArray columns = data.getJSONArray("column_names");
                 JSONArray rows = data.getJSONArray("data");
-                DataFrame df = new DataFrame(columns, rows);
+                // DataFrame df = new DataFrame(columns, rows);
+
+                Table df = Table.create();
+                for (var col : columns) {
+                    df.addColumns(StringColumn.create(col.toString().toLowerCase()));
+                }
+                for (int index = 0; index < rows.length(); index++) {
+                    for (int j = 0; j < columns.length(); j++) {
+                        String r = rows.getJSONArray(index).get(j) != null ? rows.getJSONArray(index).get(j).toString()
+                                : null;
+                        df.column(j).appendCell(r);
+                    }
+                }
+
+                // System.out.println(df);
 
                 return df;
 
             }
-
-            // System.out.println(data);
-
             if (data.getString("type").equals("error")) {
                 throw new RuntimeException("SQL Query failed: " + data.getString("error_message"));
             }
@@ -153,27 +162,68 @@ public final class RestAPI {
         }
     }
 
-    public DataFrame sqlQuery(String sql) {
+    public Table sqlQuery(String sql) {
         return sqlQuery(sql, null);
     }
 
-    public void uploadFile(String name, Object data) throws UnirestException, IOException {
-        byte[] fileData;
+    // public void uploadFile(String name, Object data) throws UnirestException,
+    // IOException {
+    // byte[] fileData;
 
-        if (data instanceof File) {
-            fileData = Files.readAllBytes(((File) data).toPath());
-        } else if (data instanceof String) {
-            try {
-                HttpResponse<byte[]> response = session.get((String) data).asBytes();
-                fileData = response.getBody();
-            } catch (UnirestException e) {
-                throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
-            }
-        } else {
-            throw new IllegalArgumentException("Unsupported data type for upload");
-        }
+    // if (data instanceof File file) {
+    // fileData = Files.readAllBytes(file.toPath());
+    // } else if (data instanceof String string) {
+    // try {
+    // HttpResponse<byte[]> response = session.get(string).asBytes();
+    // fileData = response.getBody();
+    // } catch (UnirestException e) {
+    // throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
+    // }
+    // } else {
+    // throw new IllegalArgumentException("Unsupported data type for upload");
+    // }
 
+    // try {
+
+    // HttpResponse<String> response = session.put(url + "/api/files/" + name)
+    // .field("original_file_name", name)
+    // .field("name", name)
+    // .field("source_type", "file")
+    // .field("file", fileData, name)
+    // .asString();
+
+    // if (response.getStatus() >= 400) {
+    // throw new RuntimeException("File upload failed: " + response.getBody());
+    // }
+    // } catch (UnirestException e) {
+    // throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
+    // }
+
+    // }
+
+    public void uploadFile(String name, File data) throws IOException {
+        byte[] fileData = Files.readAllBytes(data.toPath());
         try {
+            HttpResponse<String> response = session.put(url + "/api/files/" + name)
+                    .field("original_file_name", name)
+                    .field("name", name)
+                    .field("source_type", "file")
+                    .field("file", fileData, name)
+                    .asString();
+            if (response.getStatus() >= 400) {
+                throw new RuntimeException("File upload failed: " + response.getBody());
+            }
+        } catch (UnirestException e) {
+            throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
+        }
+    }
+
+    public void uploadFile(String name, String data) {
+        try {
+
+            HttpResponse<byte[]> uploadResponse = session.get(data).asBytes();
+            byte[] fileData;
+            fileData = uploadResponse.getBody();
 
             HttpResponse<String> response = session.put(url + "/api/files/" + name)
                     .field("original_file_name", name)
@@ -181,14 +231,12 @@ public final class RestAPI {
                     .field("source_type", "file")
                     .field("file", fileData, name)
                     .asString();
-
             if (response.getStatus() >= 400) {
                 throw new RuntimeException("File upload failed: " + response.getBody());
             }
         } catch (UnirestException e) {
-            throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
+            throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
         }
-
     }
 
     public void closeSession() {
@@ -243,7 +291,7 @@ public final class RestAPI {
     }
 
     public JsonObject status() throws UnirestException {
-        HttpResponse<String> response = Unirest.get(this.url + "/api/status").asString();
+        HttpResponse<String> response = session.get(this.url + "/api/status").asString();
 
         raiseForStatus(response);
 
@@ -251,7 +299,7 @@ public final class RestAPI {
     }
 
     public JsonObject agents(String project) throws UnirestException {
-        HttpResponse<String> response = Unirest.get(this.url + "/api/projects/" + project + "/agents").asString();
+        HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/agents").asString();
 
         raiseForStatus(response);
 
@@ -259,7 +307,7 @@ public final class RestAPI {
     }
 
     public JsonObject agent(String project, String name) throws UnirestException {
-        HttpResponse<String> response = Unirest.get(this.url + "/api/projects/" + project + "/agents/" + name)
+        HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/agents/" + name)
                 .asString();
 
         raiseForStatus(response);
@@ -271,7 +319,7 @@ public final class RestAPI {
         JsonObject body = new JsonObject();
         body.add("messages", gson.toJsonTree(messages));
 
-        HttpResponse<String> response = Unirest
+        HttpResponse<String> response = session
                 .post(this.url + "/api/projects/" + project + "/agents/" + name + "/completions")
                 .header("Content-Type", "application/json")
                 .body(body.toString())
@@ -290,7 +338,7 @@ public final class RestAPI {
     }
 
     public JsonArray skills(String project) throws UnirestException {
-        HttpResponse<String> response = Unirest.get(this.url + "/api/projects/" + project + "/skills").asString();
+        HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/skills").asString();
 
         raiseForStatus(response);
 
@@ -298,7 +346,7 @@ public final class RestAPI {
     }
 
     public JsonObject skill(String project, String name) throws UnirestException {
-        HttpResponse<String> response = Unirest.get(this.url + "/api/projects/" + project + "/skills/" + name)
+        HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/skills/" + name)
                 .asString();
 
         raiseForStatus(response);
@@ -315,7 +363,7 @@ public final class RestAPI {
 
         body.add("skill", skill);
 
-        HttpResponse<String> response = Unirest.post(this.url + "/api/projects/" + project + "/skills")
+        HttpResponse<String> response = session.post(this.url + "/api/projects/" + project + "/skills")
                 .header("Content-Type", "application/json")
                 .body(body.toString())
                 .asString();
@@ -333,7 +381,7 @@ public final class RestAPI {
 
         body.add("skill", skill);
 
-        HttpResponse<String> response = Unirest.put(this.url + "/api/projects/" + project + "/skills/" + name)
+        HttpResponse<String> response = session.put(this.url + "/api/projects/" + project + "/skills/" + name)
                 .header("Content-Type", "application/json")
                 .body(body.toString())
                 .asString();
@@ -342,7 +390,7 @@ public final class RestAPI {
     }
 
     public void deleteSkill(String project, String name) throws UnirestException {
-        HttpResponse<String> response = Unirest.delete(this.url + "/api/projects/" + project + "/skills/" + name)
+        HttpResponse<String> response = session.delete(this.url + "/api/projects/" + project + "/skills/" + name)
                 .asString();
 
         raiseForStatus(response);
@@ -356,7 +404,7 @@ public final class RestAPI {
 
         body.add("knowledge_base", knowledgeBase);
 
-        HttpResponse<String> response = Unirest
+        HttpResponse<String> response = session
                 .put(this.url + "/api/projects/" + project + "/knowledge_bases/" + knowledgeBaseName)
                 .header("Content-Type", "application/json")
                 .body(body.toString())
@@ -375,7 +423,7 @@ public final class RestAPI {
 
         body.add("knowledge_base", knowledgeBase);
 
-        HttpResponse<String> response = Unirest
+        HttpResponse<String> response = session
                 .put(this.url + "/api/projects/" + project + "/knowledge_bases/" + knowledgeBaseName)
                 .header("Content-Type", "application/json")
                 .body(body.toString())
@@ -387,4 +435,35 @@ public final class RestAPI {
     public String getUrl() {
         return url;
     }
+
+    public Table objectsTree(String item) {
+        HttpResponse<String> response = this.session.get(this.url + "/api/tree/" + item)
+                .header("Content-Type", "application/json")
+                .asString();
+        raiseForStatus(response);
+        JsonArray data = gson.fromJson(response.getBody(), JsonArray.class);
+
+        Table table = Table.create();
+        if (data.size() > 0) {
+            JsonObject firstRow = data.get(0).getAsJsonObject();
+            for (String key : firstRow.keySet()) {
+                table.addColumns(StringColumn.create(key));
+            }
+
+            for (JsonElement element : data) {
+                JsonObject row = element.getAsJsonObject();
+                for (String key : row.keySet()) {
+                    String value = row.get(key).isJsonNull() ? null : row.get(key).getAsString();
+                    table.stringColumn(key).append(value);
+                }
+            }
+        }
+
+        return table;
+    }
+
+    public Table objectsTree() {
+        return objectsTree("");
+    }
+
 }
