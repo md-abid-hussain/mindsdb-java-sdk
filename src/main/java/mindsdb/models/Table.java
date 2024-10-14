@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import mindsdb.connectors.RestAPI;
 import mindsdb.services.Query;
-import mindsdb.utils.DataFrame;
+import tech.tablesaw.api.Row;
 
 public class Table extends Query {
     private String name;
@@ -16,7 +15,6 @@ public class Table extends Query {
     private Map<String, String> filters;
     private Integer limit;
     private String trackColumn;
-    private String sql;
 
     public Table(Database database, String name) {
         super(database.api, "");
@@ -26,15 +24,23 @@ public class Table extends Query {
         this.filters = new HashMap<>();
         this.limit = null;
         this.trackColumn = null;
+        this.updateQuery();
     }
 
-    public Table(RestAPI api, String sql) {
-        super(api, sql);
-        ;
+    public Table(Project project, String name) {
+        super(project.api, "");
+        this.name = name;
+        this.tableName = project.getName() + "." + name;
+        this.updateQuery();
+
     }
+
+    // public Table(RestAPI api, String sql) {
+    // super(api, sql);
+    // }
 
     private String filterRepr() {
-        if (filters.isEmpty()) {
+        if (filters == null || filters.isEmpty()) {
             return "";
         }
         String filtersStr = filters.entrySet().stream()
@@ -147,7 +153,7 @@ public class Table extends Query {
      * @return
      */
 
-    public Query insert(Table query) {
+    public void insert(Table query) {
         if (query.database != null) {
             this.sql = String.format("INSERT INTO %s (%s)", this.tableName, query.sql);
         } else {
@@ -159,12 +165,11 @@ public class Table extends Query {
         // }
 
         this.database.api.sqlQuery(this.sql);
-        return null;
     }
 
-    public Query insert(DataFrame query) {
-        List<Map<String, Object>> rows = query.getRows();
-        List<String> columns = query.getColumnNames();
+    public void insert(tech.tablesaw.api.Table query) {
+        List<Row> rows = query.stream().collect(Collectors.toList());
+        List<String> columns = query.columnNames();
 
         StringBuilder astQuery = new StringBuilder();
         astQuery.append("INSERT INTO ");
@@ -173,11 +178,32 @@ public class Table extends Query {
         astQuery.append(String.join(", ", columns));
         astQuery.append(") VALUES ");
 
-        for (int i = 0; i < rows.size(); i++) {
-            Map<String, Object> row = rows.get(i);
+        // for (int i = 0; i < rows.size(); i++) {
+        // Map<String, Object> row = rows.get(i);
+        // astQuery.append("(");
+        // for (int j = 0; j < columns.size(); j++) {
+        // Object value = row.get(columns.get(j));
+        // if (value instanceof String) {
+        // astQuery.append("'");
+        // astQuery.append(value);
+        // astQuery.append("'");
+        // } else {
+        // astQuery.append(value);
+        // }
+        // if (j < columns.size() - 1) {
+        // astQuery.append(", ");
+        // }
+        // }
+        // astQuery.append(")");
+        // if (i < rows.size() - 1) {
+        // astQuery.append(", ");
+        // }
+        // }
+
+        for (Row row : rows) {
             astQuery.append("(");
             for (int j = 0; j < columns.size(); j++) {
-                Object value = row.get(columns.get(j));
+                Object value = row.getObject(j);
                 if (value instanceof String) {
                     astQuery.append("'");
                     astQuery.append(value);
@@ -190,7 +216,7 @@ public class Table extends Query {
                 }
             }
             astQuery.append(")");
-            if (i < rows.size() - 1) {
+            if (rows.indexOf(row) < rows.size() - 1) {
                 astQuery.append(", ");
             }
         }
@@ -202,8 +228,6 @@ public class Table extends Query {
         // }
 
         this.database.api.sqlQuery(this.sql);
-        return null;
-
     }
 
     // public Query insert(Object query) {

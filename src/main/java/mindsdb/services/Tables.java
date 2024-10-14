@@ -5,7 +5,6 @@ import java.util.List;
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Database;
 import mindsdb.models.Table;
-import mindsdb.utils.ContextManager;
 import mindsdb.utils.DataFrame;
 
 public class Tables {
@@ -18,13 +17,18 @@ public class Tables {
     }
 
     private List<String> listTables() {
-        DataFrame response = database.query("SHOW TABLES").fetch();
+        tech.tablesaw.api.Table response = database.query("SHOW TABLES").fetch();
 
         // Get the first column name
-        String firstColumnName = response.getColumnNames().get(0);
+        // String firstColumnName = response.getColumnNames().get(0);
+        String firstColumnName = response.columnNames().get(0);
 
         // Return the first column as a list of strings
-        return response.getColumn(firstColumnName).stream()
+        // return response.getColumn(firstColumnName).stream()
+        // .map(Object::toString)
+        // .toList();
+
+        return response.column(firstColumnName).asList().stream()
                 .map(Object::toString)
                 .toList();
 
@@ -74,9 +78,9 @@ public class Tables {
             sql = String.format("CREATE%s TABLE %s (%s)", replaceStr, tableName, query.sql);
         }
 
-        if (ContextManager.isSaving()) {
-            return new Table(this.api, sql);
-        }
+        // if (ContextManager.isSaving()) {
+        // return new Table(this.api, sql);
+        // }
         this.api.sqlQuery(sql);
         return new Table(this.database, name);
     }
@@ -99,13 +103,12 @@ public class Tables {
      * 
      * @param tableName
      */
-    public Query drop(String tableName) {
+    public void drop(String tableName) {
         String sql = String.format("DROP TABLE %s", this.database.name + "." + tableName);
-        if (ContextManager.isSaving()) {
-            return new Query(this.api, sql);
-        }
+        // if (ContextManager.isSaving()) {
+        // return new Query(this.api, sql);
+        // }
         this.api.sqlQuery(sql);
-        return null;
     }
 
 }
