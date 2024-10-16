@@ -9,9 +9,9 @@ import mindsdb.services.Query;
 import tech.tablesaw.api.Row;
 
 public class Table extends Query {
-    private String name;
-    private String tableName;
-    private Database database;
+    public String name;
+    public String tableName;
+    public Database db;
     private Map<String, String> filters;
     private Integer limit;
     private String trackColumn;
@@ -19,7 +19,7 @@ public class Table extends Query {
     public Table(Database database, String name) {
         super(database.api, "");
         this.name = name;
-        this.database = database;
+        this.db = database;
         this.tableName = database.name + "." + name;
         this.filters = new HashMap<>();
         this.limit = null;
@@ -35,10 +35,6 @@ public class Table extends Query {
 
     }
 
-    // public Table(RestAPI api, String sql) {
-    // super(api, sql);
-    // }
-
     private String filterRepr() {
         if (filters == null || filters.isEmpty()) {
             return "";
@@ -47,16 +43,6 @@ public class Table extends Query {
                 .map(e -> e.getKey() + " = " + e.getValue())
                 .collect(Collectors.joining(", "));
         return ", " + filtersStr;
-    }
-
-    @Override
-    public String toString() {
-        String limitStr = "";
-        if (this.limit != null) {
-            limitStr = ", limit=" + this.limit;
-        }
-        return String.format("%s(%s%s%s)", this.getClass().getSimpleName(), this.tableName, this.filterRepr(),
-                limitStr);
     }
 
     private void updateQuery() {
@@ -92,6 +78,16 @@ public class Table extends Query {
         return new HashMap<>(this.filters);
     }
 
+    @Override
+    public String toString() {
+        String limitStr = "";
+        if (this.limit != null) {
+            limitStr = ", limit=" + this.limit;
+        }
+        return String.format("%s(%s%s%s)", this.getClass().getSimpleName(), this.tableName, this.filterRepr(),
+                limitStr);
+    }
+
     /**
      * Filter the table by key-value pairs
      * >>> table.filter("a=1", "b=2")
@@ -107,13 +103,15 @@ public class Table extends Query {
         }
 
         // Create a new Table object (deep copy) and copy the filters
-        Table queryTable = new Table(this.database, this.name);
+        Table queryTable = new Table(this.db, this.name);
         queryTable.filters = this.copyFilters(); // Copy existing filters
 
         for (String param : filters) {
             String[] keyValue = param.split("=");
             queryTable.filters.put(keyValue[0], keyValue[1]);
         }
+        queryTable.limit = this.limit;
+        queryTable.trackColumn = this.trackColumn;
         queryTable.updateQuery();
         return queryTable;
     }
@@ -125,7 +123,7 @@ public class Table extends Query {
      * @return Table object with the limit set
      */
     public Table limit(Integer limit) {
-        Table queryTable = new Table(this.database, this.name);
+        Table queryTable = new Table(this.db, this.name);
         queryTable.filters = this.copyFilters();
         queryTable.limit = limit;
         queryTable.updateQuery();
@@ -139,7 +137,7 @@ public class Table extends Query {
      * @return Table object with the track column set
      */
     public Table track(String column) {
-        Table queryTable = new Table(this.database, this.name);
+        Table queryTable = new Table(this.db, this.name);
         queryTable.filters = this.copyFilters();
         queryTable.limit = this.limit;
         queryTable.trackColumn = column;
@@ -148,27 +146,27 @@ public class Table extends Query {
     }
 
     /**
+     * Insert data into table
      * 
-     * @param query
-     * @return
+     * @param query a Query object representing the data to insert
      */
-
-    public void insert(Table query) {
+    public void insert(Query query) {
+        String astQuery;
         if (query.database != null) {
-            this.sql = String.format("INSERT INTO %s (%s)", this.tableName, query.sql);
+            String fromQueryString = String.format("SELECT * FROM %s (%s)", query.database, query.sql);
+            astQuery = String.format("INSERT INTO %s %s", this.tableName, fromQueryString);
         } else {
-            this.sql = String.format("INSERT INTO %s (%s)", this.tableName, query.name);
+            astQuery = String.format("INSERT INTO %s (%s)", this.tableName, query.sql);
         }
-
-        // if (ContextManager.isSaving()) {
-        // return new Query(null, sql, null);
-        // }
-
-        this.database.api.sqlQuery(this.sql);
+        this.db.api.sqlQuery(astQuery);
     }
 
+    /**
+     * Insert data into table
+     * 
+     * @param query a Tablesaw Table object representing the data to insert
+     */
     public void insert(tech.tablesaw.api.Table query) {
-        List<Row> rows = query.stream().collect(Collectors.toList());
         List<String> columns = query.columnNames();
 
         StringBuilder astQuery = new StringBuilder();
@@ -178,30 +176,10 @@ public class Table extends Query {
         astQuery.append(String.join(", ", columns));
         astQuery.append(") VALUES ");
 
-        // for (int i = 0; i < rows.size(); i++) {
-        // Map<String, Object> row = rows.get(i);
-        // astQuery.append("(");
-        // for (int j = 0; j < columns.size(); j++) {
-        // Object value = row.get(columns.get(j));
-        // if (value instanceof String) {
-        // astQuery.append("'");
-        // astQuery.append(value);
-        // astQuery.append("'");
-        // } else {
-        // astQuery.append(value);
-        // }
-        // if (j < columns.size() - 1) {
-        // astQuery.append(", ");
-        // }
-        // }
-        // astQuery.append(")");
-        // if (i < rows.size() - 1) {
-        // astQuery.append(", ");
-        // }
-        // }
-
-        for (Row row : rows) {
+        for (int index = 0; index < query.rowCount(); index++) {
+            Row row = query.row(index);
             astQuery.append("(");
+
             for (int j = 0; j < columns.size(); j++) {
                 Object value = row.getObject(j);
                 if (value instanceof String) {
@@ -216,80 +194,13 @@ public class Table extends Query {
                 }
             }
             astQuery.append(")");
-            if (rows.indexOf(row) < rows.size() - 1) {
+            if (index < query.rowCount() - 1) {
                 astQuery.append(", ");
             }
         }
 
-        this.sql = astQuery.toString();
-
-        // if (ContextManager.isSaving()) {
-        // return new Query(null, sql, null);
-        // }
-
-        this.database.api.sqlQuery(this.sql);
+        this.db.api.sqlQuery(astQuery.toString());
     }
-
-    // public Query insert(Object query) {
-    // if (query instanceof Table) {
-    // Table queryObj = (Table) query;
-    // if (queryObj.database != null) {
-    // this.sql = String.format("INSERT INTO %s (%s)", this.tableName,
-    // queryObj.sql);
-    // } else {
-    // this.sql = String.format("INSERT INTO %s (%s)", this.tableName,
-    // queryObj.name);
-    // }
-    // } else if (query instanceof DataFrame) {
-    // List<Map<String, Object>> rows = ((DataFrame) query).getRows();
-    // List<String> columns = ((DataFrame) query).getColumnNames();
-
-    // StringBuilder astQuery = new StringBuilder();
-    // astQuery.append("INSERT INTO ");
-    // astQuery.append(this.tableName);
-    // astQuery.append(" (");
-    // astQuery.append(String.join(", ", columns));
-    // astQuery.append(") VALUES ");
-
-    // for (int i = 0; i < rows.size(); i++) {
-    // Map<String, Object> row = rows.get(i);
-    // astQuery.append("(");
-    // for (int j = 0; j < columns.size(); j++) {
-    // Object value = row.get(columns.get(j));
-    // if (value instanceof String) {
-    // astQuery.append("'");
-    // astQuery.append(value);
-    // astQuery.append("'");
-    // } else {
-    // astQuery.append(value);
-    // }
-    // if (j < columns.size() - 1) {
-    // astQuery.append(", ");
-    // }
-    // }
-    // astQuery.append(")");
-    // if (i < rows.size() - 1) {
-    // astQuery.append(", ");
-    // }
-    // }
-
-    // this.sql = astQuery.toString();
-
-    // } else {
-    // if (query == null) {
-    // throw new IllegalArgumentException("Query object cannot be null.");
-    // }
-    // throw new IllegalArgumentException("Invalid query type: " +
-    // query.getClass().getName());
-    // }
-
-    // if (ContextManager.isSaving()) {
-    // return new Query(null, sql, null);
-    // }
-
-    // this.database.api.sqlQuery(this.sql);
-    // return null;
-    // }
 
     /**
      * Deletes record from table using filters
@@ -310,14 +221,9 @@ public class Table extends Query {
             deleteQuery.append(whereClause);
         }
 
-        this.sql = deleteQuery.toString();
+        deleteQuery.append(";");
 
-        // if (ContextManager.isSaving()) {
-        // return new Query(null, sql, null);
-        // }
-
-        this.database.api.sqlQuery(this.sql);
-        // return null;
+        this.db.api.sqlQuery(deleteQuery.toString());
     }
 
     /**
@@ -350,47 +256,34 @@ public class Table extends Query {
         String whereClause = String.join(" AND ", filters);
         updateQuery.append(whereClause);
 
-        this.sql = updateQuery.toString();
-
-        // if (ContextManager.isSaving()) {
-        // return new Query(null, sql, null);
-        // }
-
-        this.database.api.sqlQuery(this.sql);
-        // return null;
+        this.db.api.sqlQuery(updateQuery.toString());
     }
 
-    /**
-     * Update table from subquery
-     * 
-     * @param subQuery  a Query object representing the subquery
-     * @param onColumns list of columns to map subselect to table ['a', 'b', ...]
-     * @return a Query object representing the update operation
-     */
-    public void update(Query subQuery, List<String> onColumns) {
-        if (subQuery == null) {
-            throw new IllegalArgumentException("Subquery cannot be null.");
-        }
-        if (onColumns == null || onColumns.isEmpty()) {
-            throw new IllegalArgumentException("On columns list cannot be null or empty.");
-        }
+    // /**
+    // * Update table from subquery
+    // *
+    // * @param subQuery a Query object representing the subquery
+    // * @param onColumns list of columns to map subselect to table ['a', 'b', ...]
+    // * @return a Query object representing the update operation
+    // */
+    // public void update(Query subQuery, List<String> onColumns) {
+    // if (subQuery == null) {
+    // throw new IllegalArgumentException("Subquery cannot be null.");
+    // }
+    // if (onColumns == null || onColumns.isEmpty()) {
+    // throw new IllegalArgumentException("On columns list cannot be null or
+    // empty.");
+    // }
 
-        StringBuilder updateQuery = new StringBuilder("UPDATE ");
-        updateQuery.append(this.tableName);
-        updateQuery.append(" ON ");
-        updateQuery.append(String.join(", ", onColumns));
-        updateQuery.append(" FROM (");
-        updateQuery.append(subQuery.sql);
-        updateQuery.append(")");
+    // StringBuilder updateQuery = new StringBuilder("UPDATE ");
+    // updateQuery.append(this.tableName);
+    // updateQuery.append(" ON ");
+    // updateQuery.append(String.join(", ", onColumns));
+    // updateQuery.append(" FROM (");
+    // updateQuery.append(subQuery.sql);
+    // updateQuery.append(")");
 
-        this.sql = updateQuery.toString();
-
-        // if (ContextManager.isSaving()) {
-        // return new Query(null, sql, null);
-        // }
-
-        this.database.api.sqlQuery(this.sql);
-        // return null;
-    }
+    // this.db.api.sqlQuery(updateQuery.toString());
+    // }
 
 }
