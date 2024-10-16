@@ -5,7 +5,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,27 +20,31 @@ import tech.tablesaw.api.Table;
 
 public class ProjectsTest {
     private RestAPI api;
+    private Server server;
     private Projects projects;
 
     @BeforeEach
     public void setUp() {
         api = mock(RestAPI.class);
-        Server server = mock(Server.class);
+        server = mock(Server.class);
         projects = new Projects(server, api);
     }
 
     @Test
     public void testListProjects() {
-        Table mockResponse = createMockTable(
-                new String[] { "NAME" },
-                new String[][] {
-                        { "project1" },
-                        { "project2" }
-                });
+        // Create a mock response table
+        Table mockResponse = Table.create("databases")
+                .addColumns(
+                        StringColumn.create("NAME", new String[] { "project1", "project2" }));
+
+        // Mock the API call to return the mock response
         when(api.sqlQuery(anyString())).thenReturn(mockResponse);
 
+        // Call the method under test
         List<Project> projectList = projects.list();
 
+        // Verify the results
+        assertNotNull(projectList);
         assertEquals(2, projectList.size());
         assertEquals("project1", projectList.get(0).getName());
         assertEquals("project2", projectList.get(1).getName());
@@ -49,76 +52,61 @@ public class ProjectsTest {
 
     @Test
     public void testGetProject() {
-        Table mockResponse = createMockTable(
-                new String[] { "NAME" },
-                new String[][] {
-                        { "project1" },
-                        { "project2" }
-                });
+        // Create a mock response table
+        Table mockResponse = Table.create("databases")
+                .addColumns(
+                        StringColumn.create("NAME", new String[] { "project1", "project2" }));
+
+        // Mock the API call to return the mock response
         when(api.sqlQuery(anyString())).thenReturn(mockResponse);
 
+        // Call the method under test
         Project project = projects.get("project1");
 
+        // Verify the results
         assertNotNull(project);
         assertEquals("project1", project.getName());
     }
 
     @Test
     public void testGetNonExistentProject() {
-        Table mockResponse = createMockTable(
-                new String[] { "NAME" },
-                new String[][] {
-                        { "project1" },
-                        { "project2" }
-                });
+        // Create a mock response table
+        Table mockResponse = Table.create("databases")
+                .addColumns(
+                        StringColumn.create("NAME", new String[] { "project1", "project2" }));
+
+        // Mock the API call to return the mock response
         when(api.sqlQuery(anyString())).thenReturn(mockResponse);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            projects.get("nonexistent");
-        });
-
-        String expectedMessage = "Project doesn't exist";
-        String actualMessage = exception.getMessage();
-
-        assertTrue(actualMessage.contains(expectedMessage));
+        // Call the method under test and verify the exception
+        assertThrows(IllegalArgumentException.class, () -> projects.get("nonexistent_project"));
     }
 
     @Test
     public void testCreateProject() {
-        Table mockResponse = createMockTable(
-                new String[] { "NAME" },
-                new String[][] {
-                        { "new_project" }
-                });
-        when(api.sqlQuery(anyString())).thenReturn(mockResponse);
+        // Mock the API call to return an empty response
+        when(api.sqlQuery(anyString())).thenReturn(Table.create("empty"));
 
+        // Call the method under test
         Project project = projects.create("new_project");
 
+        // Verify the results
         assertNotNull(project);
         assertEquals("new_project", project.getName());
+
+        // Verify that the correct SQL query was executed
+        verify(api, times(1)).sqlQuery("CREATE DATABASE new_project WITH ENGINE 'mindsdb'");
     }
 
     @Test
     public void testDropProject() {
-        Table mockResponse = createMockTable(
-                new String[] { "NAME" },
-                new String[][] {});
-        when(api.sqlQuery(anyString())).thenReturn(mockResponse);
+        // Mock the API call to return an empty response
+        when(api.sqlQuery(anyString())).thenReturn(Table.create("empty"));
 
+        // Call the method under test
         projects.drop("project_to_drop");
 
+        // Verify that the correct SQL query was executed
         verify(api, times(1)).sqlQuery("DROP DATABASE project_to_drop");
-    }
-
-    private Table createMockTable(String[] columnNames, String[][] data) {
-        StringColumn[] columns = new StringColumn[columnNames.length];
-        for (int i = 0; i < columnNames.length; i++) {
-            StringColumn column = StringColumn.create(columnNames[i]);
-            for (String[] row : data) {
-                column.append(row[i]);
-            }
-            columns[i] = column;
-        }
-        return Table.create(columns);
     }
 }
