@@ -5,7 +5,6 @@ import java.util.List;
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Database;
 import mindsdb.models.Table;
-import mindsdb.utils.DataFrame;
 
 public class Tables {
     public final Database database;
@@ -18,15 +17,7 @@ public class Tables {
 
     private List<String> listTables() {
         tech.tablesaw.api.Table response = database.query("SHOW TABLES").fetch();
-
-        // Get the first column name
-        // String firstColumnName = response.getColumnNames().get(0);
         String firstColumnName = response.columnNames().get(0);
-
-        // Return the first column as a list of strings
-        // return response.getColumn(firstColumnName).stream()
-        // .map(Object::toString)
-        // .toList();
 
         return response.column(firstColumnName).asList().stream()
                 .map(Object::toString)
@@ -65,23 +56,20 @@ public class Tables {
      */
     public Table create(String name, Query query, boolean replace) {
         String tableName = this.database.name + "." + name;
-        String sql;
+        String astQuery;
         String replaceStr = "";
         if (replace) {
             replaceStr = " OR REPLACE";
         }
         if (query.database != null) {
 
-            sql = String.format("CREATE%s TABLE %s SELECT * FROM %s (%s)'", replaceStr, tableName,
+            astQuery = String.format("CREATE%s TABLE %s SELECT * FROM %s (%s)'", replaceStr, tableName,
                     query.database, query.sql);
         } else {
-            sql = String.format("CREATE%s TABLE %s (%s)", replaceStr, tableName, query.sql);
+            astQuery = String.format("CREATE%s TABLE %s (%s)", replaceStr, tableName, query.sql);
         }
 
-        // if (ContextManager.isSaving()) {
-        // return new Table(this.api, sql);
-        // }
-        this.api.sqlQuery(sql);
+        this.api.sqlQuery(astQuery);
         return new Table(this.database, name);
     }
 
@@ -93,9 +81,18 @@ public class Tables {
      * @param replace Replace the table if it already exists
      * @return Table
      */
-    public Table create(String name, DataFrame query, boolean replace) {
-        // To be implemented
-        return null;
+    public Table create(String name, tech.tablesaw.api.Table df, Boolean replace) {
+        this.api.uploadFile(name, df);
+
+        if (this.database.name.equals("files")) {
+            if (name.contains(".")) {
+                name = name.split("\\.")[0];
+            }
+
+            return new Table(this.database, name);
+        }
+
+        throw new IllegalArgumentException("Only files database is supported for now");
     }
 
     /**
@@ -105,9 +102,6 @@ public class Tables {
      */
     public void drop(String tableName) {
         String sql = String.format("DROP TABLE %s", this.database.name + "." + tableName);
-        // if (ContextManager.isSaving()) {
-        // return new Query(this.api, sql);
-        // }
         this.api.sqlQuery(sql);
     }
 
