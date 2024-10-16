@@ -3,6 +3,7 @@ package mindsdb.connectors;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
@@ -166,24 +167,29 @@ public final class RestAPI {
         return sqlQuery(sql, null);
     }
 
-    // public void uploadFile(String name, Object data) throws UnirestException,
-    // IOException {
-    // byte[] fileData;
-
-    // if (data instanceof File file) {
-    // fileData = Files.readAllBytes(file.toPath());
-    // } else if (data instanceof String string) {
+    // public void uploadFile(String name, File data) throws IOException {
+    // byte[] fileData = Files.readAllBytes(data.toPath());
     // try {
-    // HttpResponse<byte[]> response = session.get(string).asBytes();
-    // fileData = response.getBody();
+    // HttpResponse<String> response = session.put(url + "/api/files/" + name)
+    // .field("original_file_name", name)
+    // .field("name", name)
+    // .field("source_type", "file")
+    // .field("file", fileData, name)
+    // .asString();
+    // if (response.getStatus() >= 400) {
+    // throw new RuntimeException("File upload failed: " + response.getBody());
+    // }
     // } catch (UnirestException e) {
-    // throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
+    // throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
     // }
-    // } else {
-    // throw new IllegalArgumentException("Unsupported data type for upload");
     // }
 
+    // public void uploadFile(String name, String data) {
     // try {
+
+    // HttpResponse<byte[]> uploadResponse = session.get(data).asBytes();
+    // byte[] fileData;
+    // fileData = uploadResponse.getBody();
 
     // HttpResponse<String> response = session.put(url + "/api/files/" + name)
     // .field("original_file_name", name)
@@ -191,73 +197,35 @@ public final class RestAPI {
     // .field("source_type", "file")
     // .field("file", fileData, name)
     // .asString();
-
     // if (response.getStatus() >= 400) {
     // throw new RuntimeException("File upload failed: " + response.getBody());
     // }
     // } catch (UnirestException e) {
-    // throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
+    // throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
     // }
-
     // }
-
-    public void uploadFile(String name, File data) throws IOException {
-        byte[] fileData = Files.readAllBytes(data.toPath());
-        try {
-            HttpResponse<String> response = session.put(url + "/api/files/" + name)
-                    .field("original_file_name", name)
-                    .field("name", name)
-                    .field("source_type", "file")
-                    .field("file", fileData, name)
-                    .asString();
-            if (response.getStatus() >= 400) {
-                throw new RuntimeException("File upload failed: " + response.getBody());
-            }
-        } catch (UnirestException e) {
-            throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
-        }
-    }
-
-    public void uploadFile(String name, String data) {
-        try {
-
-            HttpResponse<byte[]> uploadResponse = session.get(data).asBytes();
-            byte[] fileData;
-            fileData = uploadResponse.getBody();
-
-            HttpResponse<String> response = session.put(url + "/api/files/" + name)
-                    .field("original_file_name", name)
-                    .field("name", name)
-                    .field("source_type", "file")
-                    .field("file", fileData, name)
-                    .asString();
-            if (response.getStatus() >= 400) {
-                throw new RuntimeException("File upload failed: " + response.getBody());
-            }
-        } catch (UnirestException e) {
-            throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
-        }
-    }
 
     public void closeSession() {
         this.session.close();
     }
 
-    public JsonObject getFileMetadata(String name) throws UnirestException {
-        HttpResponse<String> response = Unirest.get(url + "/api/files").asString();
+    // public JsonObject getFileMetadata(String name) throws UnirestException {
+    // HttpResponse<String> response = Unirest.get(url + "/api/files").asString();
 
-        if (response.getStatus() >= 400) {
-            throw new RuntimeException("Failed to retrieve file metadata: " + response.getBody());
-        }
+    // if (response.getStatus() >= 400) {
+    // throw new RuntimeException("Failed to retrieve file metadata: " +
+    // response.getBody());
+    // }
 
-        JsonObject[] allFileMetadata = gson.fromJson(response.getBody(), JsonObject[].class);
-        for (JsonObject metadata : allFileMetadata) {
-            if (name.equals(metadata.get("name").getAsString())) {
-                return metadata;
-            }
-        }
-        throw new RuntimeException("File not found: " + name);
-    }
+    // JsonObject[] allFileMetadata = gson.fromJson(response.getBody(),
+    // JsonObject[].class);
+    // for (JsonObject metadata : allFileMetadata) {
+    // if (name.equals(metadata.get("name").getAsString())) {
+    // return metadata;
+    // }
+    // }
+    // throw new RuntimeException("File not found: " + name);
+    // }
 
     public void createAgent(String project, String name, String model, String provider, List<String> skills,
             Map<String, Object> params) throws UnirestException {
@@ -298,12 +266,12 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonObject.class);
     }
 
-    public JsonObject agents(String project) throws UnirestException {
+    public JsonArray agents(String project) throws UnirestException {
         HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/agents").asString();
 
         raiseForStatus(response);
 
-        return gson.fromJson(response.getBody(), JsonObject.class);
+        return gson.fromJson(response.getBody(), JsonArray.class);
     }
 
     public JsonObject agent(String project, String name) throws UnirestException {
@@ -464,6 +432,179 @@ public final class RestAPI {
 
     public Table objectsTree() {
         return objectsTree("");
+    }
+
+    public Table modelPredict(String project, String model, Table data, Map<String, String> params, Integer version) {
+        String modelName = model + (version != null ? "." + version : "");
+        if (params == null) {
+            params = Map.of();
+        }
+
+        JSONArray dataJson = new JSONArray();
+        for (int i = 0; i < data.rowCount(); i++) {
+            JSONObject row = new JSONObject();
+            for (int j = 0; j < data.columnCount(); j++) {
+                row.put(data.columnNames().get(j), data.get(i, j));
+            }
+            dataJson.put(row);
+        }
+
+        String endpointUrl = this.url + "/api/projects/" + project + "/models/" + modelName + "/predict";
+        HttpResponse<String> response = session.post(endpointUrl)
+                .header("Content-Type", "application/json")
+                .body(new JSONObject().put("data", dataJson).put("params", params).toString())
+                .asString();
+
+        raiseForStatus(response);
+
+        Table df = Table.create();
+        JSONArray responseData = new JSONArray(response.getBody());
+        if (responseData.length() > 0) {
+            JSONObject firstRow = responseData.getJSONObject(0);
+            for (String key : firstRow.keySet()) {
+                df.addColumns(StringColumn.create(key));
+            }
+
+            for (int i = 0; i < responseData.length(); i++) {
+                JSONObject row = responseData.getJSONObject(i);
+                for (String key : row.keySet()) {
+                    String value = row.isNull(key) ? null : row.getString(key);
+                    df.stringColumn(key).append(value);
+                }
+            }
+        }
+
+        return df;
+
+    }
+
+    public Table modelPredict(String project, String model, Map<String, String> data, Map<String, String> params,
+            Integer version) {
+        String modelName = model + (version != null ? "." + version : "");
+        if (params == null) {
+            params = Map.of();
+        }
+
+        JSONArray dataJson = new JSONArray();
+
+        JSONObject row = new JSONObject();
+        for (String key : data.keySet()) {
+            row.put(key, data.get(key));
+        }
+        dataJson.put(row);
+
+        String endpointUrl = this.url + "/api/projects/" + project + "/models/" + modelName + "/predict";
+        HttpResponse<String> response = session.post(endpointUrl)
+                .header("Content-Type", "application/json")
+                .body(new JSONObject().put("data", dataJson).put("params", params).toString())
+                .asString();
+
+        raiseForStatus(response);
+
+        Table df = Table.create();
+        JSONArray responseData = new JSONArray(response.getBody());
+        if (responseData.length() > 0) {
+            JSONObject firstRow = responseData.getJSONObject(0);
+            for (String key : firstRow.keySet()) {
+                df.addColumns(StringColumn.create(key));
+            }
+
+            for (int i = 0; i < responseData.length(); i++) {
+                JSONObject rowData = responseData.getJSONObject(i);
+                for (String key : rowData.keySet()) {
+                    String value = rowData.isNull(key) ? null : rowData.getString(key);
+                    df.stringColumn(key).append(value);
+                }
+            }
+        }
+        return df;
+    }
+
+    /**
+     * Read a file as bytes
+     * 
+     * @param filePath Path to the file
+     * @return Byte array of the file
+     */
+    public static byte[] readFileAsBytes(String filePath) {
+        try {
+            return Files.readAllBytes(Paths.get(filePath));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read file: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Read the content of dataframe as csv in bytes
+     * 
+     * @param dataframe DataFrame to read
+     * @return DataFrame as csv in bytes
+     */
+    public static byte[] readDataFrameAsCSV(Table dataframe) {
+        dataframe.write().csv("temp.csv");
+        byte[] fileData = readFileAsBytes("temp.csv");
+        File file = new File("temp.csv");
+        file.delete();
+        return fileData;
+    }
+
+    public static String readFileAsWebpage(String url) {
+        HttpResponse<String> response = Unirest.get(url).asString();
+        return response.getBody();
+    }
+
+    /**
+     * Upload a file to the MindsDB server
+     * 
+     * @param fileName Name of the file
+     * @param data     Byte array of the file
+     */
+    public void uploadData(String fileName, byte[] data) {
+        if (fileName.contains(".")) {
+            fileName = fileName.split("\\.")[0];
+        }
+
+        String endpoint = this.url + "/api/files/" + fileName;
+        var response = session.put(endpoint)
+                .field("original_file_name", fileName)
+                .field("name", fileName)
+                .field("source_type", "file")
+                .field("file", data, fileName)
+                .asString();
+
+        raiseForStatus(response);
+    }
+
+    /**
+     * Upload a file to the MindsDB server
+     * 
+     * @param name Name of the file
+     * @param data Data of the file
+     */
+    public void uploadFile(String name, String data) {
+        byte[] fileData = readFileAsBytes(data);
+        uploadData(name, fileData);
+    }
+
+    public void uploadFile(String name, Table data) {
+        byte[] fileData = readDataFrameAsCSV(data);
+        uploadData(name, fileData);
+    }
+
+    public JsonObject getFileMetadata(String name) throws UnirestException {
+        HttpResponse<String> response = session.get(url + "/api/files").asString();
+
+        if (response.getStatus() >= 400) {
+            throw new RuntimeException("Failed to retrieve file metadata: " + response.getBody());
+        }
+
+        JsonObject[] allFileMetadata = gson.fromJson(response.getBody(), JsonObject[].class);
+        for (JsonObject metadata : allFileMetadata) {
+            if (name.equals(metadata.get("name").getAsString())) {
+                return metadata;
+            }
+        }
+        throw new RuntimeException("File not found: " + name);
     }
 
 }
