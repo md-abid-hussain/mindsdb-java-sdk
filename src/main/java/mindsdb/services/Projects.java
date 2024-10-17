@@ -18,16 +18,12 @@ public class Projects {
     private List<String> _listProjects() {
         tech.tablesaw.api.Table response = api
                 .sqlQuery("SELECT NAME FROM information_schema.databases WHERE TYPE='project'");
-        // return response.getColumn("NAME").stream()
-        // .map(Object::toString)
-        // .collect(Collectors.toList());
-
         return response.stream().map(row -> row.getString("NAME")).collect(Collectors.toList());
     }
 
     public List<Project> list() {
         return _listProjects().stream()
-                .map(name -> new Project(name, api))
+                .map(name -> new Project(server, api, name))
                 .collect(Collectors.toList());
     }
 
@@ -35,13 +31,13 @@ public class Projects {
         if (!_listProjects().contains(name)) {
             throw new IllegalArgumentException("Project doesn't exist");
         }
-        return new Project(name, api);
+        return new Project(server, api, name);
     }
 
     public Project create(String name) {
         String astQuery = String.format("CREATE DATABASE %s WITH ENGINE 'mindsdb'", name);
         api.sqlQuery(astQuery);
-        return new Project(name, api);
+        return new Project(server, api, name);
     }
 
     public void drop(String name) {

@@ -37,28 +37,11 @@ public class Jobs {
             astQuery += String.format(" WHERE name='%s';", name);
         }
 
-        // DataFrame response = api.sqlQuery(astQuery, this.project.getName());
         Table response = api.sqlQuery(astQuery, this.project.getName());
 
         if (response == null) {
             return new ArrayList<>();
         }
-
-        // return response.getRows().stream()
-        // .map(row -> {
-        // Map<String, String> data = new HashMap<>();
-        // data.put("query", row.get("QUERY") != null ? row.get("QUERY").toString() :
-        // null);
-        // data.put("start_at", row.get("START_AT") != null ?
-        // row.get("START_AT").toString() : null);
-        // data.put("end_at", row.get("END_AT") != null ? row.get("END_AT").toString() :
-        // null);
-        // data.put("schedule_str",
-        // row.get("SCHEDULE_STR") != null ? row.get("SCHEDULE_STR").toString() : null);
-        // Job job = new Job(this.project, row.get("NAME").toString(), data, null);
-        // return job;
-        // })
-        // .collect(Collectors.toList());
 
         return response.stream().map(row -> {
             Map<String, String> data = new HashMap<>();

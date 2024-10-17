@@ -13,12 +13,12 @@ public class Job implements AutoCloseable {
     public final String name;
     public String queryString;
     public Map<String, String> data;
-    private List<String> queries;
-    private String startAt;
-    private String endAt;
-    private String nextRunAt;
-    private String scheduleStr;
-    private CreateJobCallback createCallback;
+    public List<String> queries;
+    public String startAt;
+    public String endAt;
+    public String nextRunAt;
+    public String scheduleStr;
+    public CreateJobCallback createCallback;
 
     public Job(Project project, String name, Map<String, String> data, CreateJobCallback createCallback) {
         this.project = project;
@@ -49,26 +49,12 @@ public class Job implements AutoCloseable {
         return String.format("%s(%s, query='%s')", this.getClass().getSimpleName(), name, queryString);
     }
 
-    // public Job enter() {
-
-    // System.out.println(1);
-    // if (createCallback == null) {
-    // throw new IllegalStateException("The job is already created and can't be used
-    // to create context."
-    // + " To be able to use context: create job without 'query_str' parameter: ");
-    // }
-    // ContextManager.setSaving("job-" + name);
-    // return this;
-    // }
-
     public void exit() {
-        // ContextManager.setSaving(null);
         if (queries.isEmpty()) {
             throw new IllegalStateException("No queries were added to job");
         }
 
         String queryStr = String.join("; ", queries);
-        // System.out.println("queryStr: " + queryStr);
         createCallback.execute(queryStr);
         refresh();
     }
@@ -83,23 +69,12 @@ public class Job implements AutoCloseable {
         update(job.data);
     }
 
-    // public void addQuery(Object query) {
-    // if (query instanceof Query) {
-    // Query q = (Query) query;
-    // if (q.database != null && !q.database.equals(project.getName())) {
-    // throw new IllegalArgumentException("Wrong query database: " + q.database
-    // + ". You could try to use SQL string instead");
-    // }
-    // queries.add(q.sql);
-    // } else if (query instanceof String) {
-    // queries.add((String) query);
-    // } else {
-    // throw new IllegalArgumentException("Unable to use add this object as a query:
-    // " + query
-    // + ". Try to use SQL string instead");
-    // }
-    // }
-
+    /**
+     * Add a query to the job
+     * 
+     * @param query Query object
+     * @return Job object
+     */
     public Job addQuery(Query query) {
         if (query.database != null && !query.database.equals(project.getName())) {
             throw new IllegalArgumentException("Wrong query database: " + query.database
@@ -109,11 +84,22 @@ public class Job implements AutoCloseable {
         return this;
     }
 
+    /**
+     * Add a query to the job
+     * 
+     * @param query SQL string
+     * @return Job object
+     */
     public Job addQuery(String query) {
         queries.add(query);
         return this;
     }
 
+    /**
+     * Get the job history
+     * 
+     * @return Table object with the job history
+     */
     public Table getHistory() {
         String astQuery = String.format("SELECT * FROM log.jobs_history WHERE name = '%s'", name);
         return project.api.sqlQuery(astQuery, project.getName());

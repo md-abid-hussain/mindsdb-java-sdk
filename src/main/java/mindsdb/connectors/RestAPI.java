@@ -24,12 +24,12 @@ import tech.tablesaw.api.Table;
 
 public final class RestAPI {
 
-    private String url;
-    private String username;
-    private String password;
-    private String apiKey;
-    private boolean isManaged;
-    private Gson gson = new Gson();
+    private final String url;
+    private final String username;
+    private final String password;
+    private final String apiKey;
+    private final boolean isManaged;
+    private final Gson gson = new Gson();
     private UnirestInstance session;
 
     public RestAPI(String url, String login, String password, String apiKey, boolean isManaged,
@@ -67,6 +67,9 @@ public final class RestAPI {
         }
     }
 
+    /**
+     * Login to the MindsDB server
+     */
     public void login() {
         String managedEndpoint = "/api/login";
         String cloudEndpoint = "/cloud/login";
@@ -112,6 +115,13 @@ public final class RestAPI {
         }
     }
 
+    /**
+     * Execute a SQL query to the MindsDB server
+     * 
+     * @param sql      SQL query to execute
+     * @param database Database to execute the query on
+     * @return Tablesaw Table containing the result of the query
+     */
     public Table sqlQuery(String sql, String database) {
         if (database == null) {
             database = "mindsdb";
@@ -126,7 +136,7 @@ public final class RestAPI {
                     .asString();
 
             if (response.getStatus() >= 400) {
-                throw new RuntimeException("SQL Query failed: " + response.getBody().toString());
+                throw new RuntimeException("SQL Query failed: " + response.getBody());
             }
 
             JSONObject data = new JSONObject(response.getBody());
@@ -134,7 +144,6 @@ public final class RestAPI {
             if (data.getString("type").equals("table")) {
                 JSONArray columns = data.getJSONArray("column_names");
                 JSONArray rows = data.getJSONArray("data");
-                // DataFrame df = new DataFrame(columns, rows);
 
                 Table df = Table.create();
                 for (var col : columns) {
@@ -147,8 +156,6 @@ public final class RestAPI {
                         df.column(j).appendCell(r);
                     }
                 }
-
-                // System.out.println(df);
 
                 return df;
 
@@ -163,70 +170,31 @@ public final class RestAPI {
         }
     }
 
+    /**
+     * Execute a SQL query to the MindsDB server
+     * 
+     * @param sql SQL query to execute
+     * @return Tablesaw Table containing the result of the query in form of table
+     */
     public Table sqlQuery(String sql) {
         return sqlQuery(sql, null);
     }
-
-    // public void uploadFile(String name, File data) throws IOException {
-    // byte[] fileData = Files.readAllBytes(data.toPath());
-    // try {
-    // HttpResponse<String> response = session.put(url + "/api/files/" + name)
-    // .field("original_file_name", name)
-    // .field("name", name)
-    // .field("source_type", "file")
-    // .field("file", fileData, name)
-    // .asString();
-    // if (response.getStatus() >= 400) {
-    // throw new RuntimeException("File upload failed: " + response.getBody());
-    // }
-    // } catch (UnirestException e) {
-    // throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
-    // }
-    // }
-
-    // public void uploadFile(String name, String data) {
-    // try {
-
-    // HttpResponse<byte[]> uploadResponse = session.get(data).asBytes();
-    // byte[] fileData;
-    // fileData = uploadResponse.getBody();
-
-    // HttpResponse<String> response = session.put(url + "/api/files/" + name)
-    // .field("original_file_name", name)
-    // .field("name", name)
-    // .field("source_type", "file")
-    // .field("file", fileData, name)
-    // .asString();
-    // if (response.getStatus() >= 400) {
-    // throw new RuntimeException("File upload failed: " + response.getBody());
-    // }
-    // } catch (UnirestException e) {
-    // throw new RuntimeException("Failed to download file: " + e.getMessage(), e);
-    // }
-    // }
 
     public void closeSession() {
         this.session.close();
     }
 
-    // public JsonObject getFileMetadata(String name) throws UnirestException {
-    // HttpResponse<String> response = Unirest.get(url + "/api/files").asString();
-
-    // if (response.getStatus() >= 400) {
-    // throw new RuntimeException("Failed to retrieve file metadata: " +
-    // response.getBody());
-    // }
-
-    // JsonObject[] allFileMetadata = gson.fromJson(response.getBody(),
-    // JsonObject[].class);
-    // for (JsonObject metadata : allFileMetadata) {
-    // if (name.equals(metadata.get("name").getAsString())) {
-    // return metadata;
-    // }
-    // }
-    // throw new RuntimeException("File not found: " + name);
-    // }
-
+    /**
+     * Create a new agent
+     * 
+     * @param project  Name of the project
+     * @param name     Name of the Agent
+     * @param model    Name of the model
+     * @param provider
+     * @param skills
+     * @param params
+     * @throws UnirestException
+     */
     public void createAgent(String project, String name, String model, String provider, List<String> skills,
             Map<String, Object> params) throws UnirestException {
         JsonObject agentDetails = new JsonObject();
@@ -434,6 +402,16 @@ public final class RestAPI {
         return objectsTree("");
     }
 
+    /**
+     * Make a batch prediction using a MindsDB model
+     * 
+     * @param project Name of the project
+     * @param model   Name of the model
+     * @param data    Tablesaw table containing the data
+     * @param params  Additional params for model
+     * @param version Version of model to use
+     * @return Tablesaw table object containing prediction
+     */
     public Table modelPredict(String project, String model, Table data, Map<String, String> params, Integer version) {
         String modelName = model + (version != null ? "." + version : "");
         if (params == null) {
@@ -478,6 +456,16 @@ public final class RestAPI {
 
     }
 
+    /**
+     * Make a single prediction using a MindsDB model
+     * 
+     * @param project Name of field to predict
+     * @param model   Name of the model
+     * @param data    Data provided to model
+     * @param params  Additional parameters
+     * @param version Version of the model
+     * @return Tablesaw Table containing the prediction
+     */
     public Table modelPredict(String project, String model, Map<String, String> data, Map<String, String> params,
             Integer version) {
         String modelName = model + (version != null ? "." + version : "");

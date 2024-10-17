@@ -5,13 +5,13 @@ import lombok.Data;
 
 @Data
 public class Handler {
-    private String name;
-    private String title;
-    private String version;
-    private String description;
-    private JSONObject connectionArgs;
-    private boolean importSuccess;
-    private String importError;
+    public String name;
+    public String title;
+    public String version;
+    public String description;
+    public JSONObject connectionArgs;
+    public boolean importSuccess;
+    public String importError;
 
     // Constructor to handle dynamic parameters
     public Handler(JSONObject kwargs) {

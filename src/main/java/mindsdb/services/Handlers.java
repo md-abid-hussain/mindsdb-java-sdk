@@ -19,12 +19,6 @@ public class Handlers {
 
     public List<Handler> list() {
         Table response = api.sqlQuery(String.format("SHOW HANDLERS WHERE TYPE='%s';", type));
-        // return response.getRows().stream()
-        // .map(row -> {
-        // JSONObject args = new JSONObject(row);
-        // return new Handler(args);
-        // })
-        // .collect(Collectors.toList());
 
         return response.stream().map(row -> {
             JSONObject args = new JSONObject();

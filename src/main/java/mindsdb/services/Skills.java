@@ -16,7 +16,7 @@ public class Skills {
     private RestAPI api;
     private Project project;
 
-    public Skills(RestAPI api, Project project) {
+    public Skills(Project project, RestAPI api) {
         this.api = api;
         this.project = project;
     }
