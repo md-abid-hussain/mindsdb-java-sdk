@@ -19,6 +19,7 @@ import kong.unirest.core.UnirestException;
 import kong.unirest.core.UnirestInstance;
 import kong.unirest.core.json.JSONArray;
 import kong.unirest.core.json.JSONObject;
+import mindsdb.utils.HttpException;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 
@@ -62,8 +63,8 @@ public final class RestAPI {
     }
 
     private void raiseForStatus(HttpResponse<String> response) {
-        if (response.getStatus() >= 400) {
-            throw new RuntimeException("Error: " + response.getStatusText() + " - " + response.getBody());
+        if (response.getStatus() >= 400 && response.getStatus() < 600) {
+            throw new HttpException(response.getStatus(), response.getBody());
         }
     }
 
@@ -195,26 +196,49 @@ public final class RestAPI {
      * @param params
      * @throws UnirestException
      */
-    public void createAgent(String project, String name, String model, String provider, List<String> skills,
-            Map<String, Object> params) throws UnirestException {
+    public JsonObject createAgent(String project, String name, String model, String provider, List<String> skills,
+            Map<String, Object> params) {
+        String endpoint = this.url + "/api/projects/" + project + "/agents";
         JsonObject agentDetails = new JsonObject();
+
         agentDetails.addProperty("name", name);
         agentDetails.addProperty("model_name", model);
-        agentDetails.addProperty("provider", provider);
         agentDetails.add("skills", gson.toJsonTree(skills));
         agentDetails.add("params", gson.toJsonTree(params));
+        agentDetails.add("provider", gson.toJsonTree("None"));
+
+        JsonObject payload = new JsonObject();
+        payload.add("agent", agentDetails);
+
+        HttpResponse<String> response = this.session.post(endpoint)
+                .header("Content-Type", "application/json")
+                .body(payload)
+                .asString();
+
+        raiseForStatus(response);
+
+        return gson.fromJson(response.getBody(), JsonObject.class);
+    }
+
+    public JsonObject updateAgent(String project, String name, String updatedName, String updatedModel,
+            List<String> skillsToAdd, List<String> skillsToRemove, JsonObject updatedParams) {
+        String endpoint = this.url + "/api/projects/" + project + "/agents/" + name;
+        JsonObject agentDetails = new JsonObject();
+        agentDetails.addProperty("name", updatedName);
+        agentDetails.addProperty("model_name", updatedModel);
+        agentDetails.add("skills_to_add", gson.toJsonTree(skillsToAdd));
+        agentDetails.add("skills_to_remove", gson.toJsonTree(skillsToRemove));
+        agentDetails.add("params", gson.toJsonTree(updatedParams));
 
         JsonObject body = new JsonObject();
         body.add("agent", agentDetails);
 
-        HttpResponse<String> response = Unirest.post(url + "/api/projects/" + project + "/agents")
-                .header("Content-Type", "application/json")
+        HttpResponse<String> response = session.put(endpoint)
                 .body(body.toString())
                 .asString();
+        raiseForStatus(response);
 
-        if (response.getStatus() >= 400) {
-            throw new RuntimeException("Failed to create agent: " + response.getBody());
-        }
+        return gson.fromJson(response.getBody(), JsonObject.class);
     }
 
     public void uploadByom(String name, String code, String requirements) throws UnirestException {
@@ -444,10 +468,16 @@ public final class RestAPI {
             }
 
             for (int i = 0; i < responseData.length(); i++) {
-                JSONObject row = responseData.getJSONObject(i);
-                for (String key : row.keySet()) {
-                    String value = row.isNull(key) ? null : row.getString(key);
-                    df.stringColumn(key).append(value);
+                JSONObject rowData = responseData.getJSONObject(i);
+                for (String key : rowData.keySet()) {
+                    Object value = rowData.get(key);
+                    if (value instanceof JSONArray jSONArray) {
+                        // Convert JSONArray to a string representation
+                        value = jSONArray.toString();
+                    } else if (rowData.isNull(key)) {
+                        value = null;
+                    }
+                    df.stringColumn(key).append((String) value);
                 }
             }
         }
@@ -481,6 +511,8 @@ public final class RestAPI {
         }
         dataJson.put(row);
 
+        System.out.println(dataJson);
+
         String endpointUrl = this.url + "/api/projects/" + project + "/models/" + modelName + "/predict";
         HttpResponse<String> response = session.post(endpointUrl)
                 .header("Content-Type", "application/json")
@@ -500,8 +532,14 @@ public final class RestAPI {
             for (int i = 0; i < responseData.length(); i++) {
                 JSONObject rowData = responseData.getJSONObject(i);
                 for (String key : rowData.keySet()) {
-                    String value = rowData.isNull(key) ? null : rowData.getString(key);
-                    df.stringColumn(key).append(value);
+                    Object value = rowData.get(key);
+                    if (value instanceof JSONArray jSONArray) {
+                        // Convert JSONArray to a string representation
+                        value = jSONArray.toString();
+                    } else if (rowData.isNull(key)) {
+                        value = null;
+                    }
+                    df.stringColumn(key).append((String) value);
                 }
             }
         }
