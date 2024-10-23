@@ -1,19 +1,40 @@
 package mindsdb.models.skill;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+/**
+ * The Skill class represents a skill with a name, type, and parameters.
+ * It provides constructors for creating a skill instance and methods for
+ * converting JSON data to a Skill object.
+ * 
+ * Attributes:
+ * - name: The name of the skill.
+ * - type: The type of the skill.
+ * - params: The parameters of the skill.
+ * 
+ * Methods:
+ * - Skill(String name, String type, Map<String, Object> params):
+ * Constructs a new Skill instance with the specified name, type, and
+ * parameters.
+ * - static Skill fromJson(JsonObject json): Converts JSON data to a Skill
+ * object.
+ */
 public class Skill {
     public final String name;
     public final String type;
-    public final JsonObject params;
+    public final Map<String, Object> params;
 
-    public Skill(String name, String type, JsonObject params) {
+    public Skill(String name, String type, Map<String, Object> params) {
         this.name = name;
         this.type = type;
-        this.params = (params != null) ? params : new JsonObject();
+        this.params = (params != null) ? params : new HashMap<>();
     }
 
     @Override
@@ -53,24 +74,43 @@ public class Skill {
         return true;
     }
 
+    @Override
+    public String toString() {
+        return "Skill(name=" + name + ")";
+    }
+
+    public String describe() {
+        return "Skill(name=" + name + ", type=" + type + ", params=" + params + ")";
+    }
+
+    /**
+     * Converts JSON data to a Skill object.
+     * 
+     * @param json The JSON data to convert.
+     * @return The Skill object created from the JSON data.
+     */
     public static Skill fromJson(JsonObject json) {
         String name = json.get("name").getAsString();
         String type = json.get("type").getAsString();
-        JsonObject params = json.getAsJsonObject("params");
+        JsonObject paramsJson = json.getAsJsonObject("params");
+        Map<String, Object> params = new Gson().fromJson(paramsJson, new TypeToken<Map<String, Object>>() {
+        }.getType());
         return new Skill(name, type, params);
     }
 
-    protected static JsonObject createParams(String database, List<String> tables, String description) {
-        JsonObject params = new JsonObject();
-        params.addProperty("database", database);
+    protected static Map<String, Object> createParams(String database, List<String> tables, String description) {
+        JsonObject paramsJson = new JsonObject();
+        paramsJson.addProperty("database", database);
         if (tables != null) {
             JsonArray tablesJsonArray = new JsonArray();
             for (String table : tables) {
                 tablesJsonArray.add(table);
             }
-            params.add("tables", tablesJsonArray);
+            paramsJson.add("tables", tablesJsonArray);
         }
-        params.addProperty("description", description);
-        return params;
+        paramsJson.addProperty("description", description);
+        return new Gson().fromJson(paramsJson, new TypeToken<Map<String, Object>>() {
+        }.getType());
     }
+
 }
