@@ -2,6 +2,8 @@ package mindsdb.models;
 
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
 import mindsdb.connectors.RestAPI;
 import mindsdb.services.Query;
 import mindsdb.services.Tables;
@@ -19,17 +21,19 @@ import mindsdb.services.Tables;
  * Table table = query.fetch();
  * Has list of tables in .tables attribute.
  */
+@Getter
+@Setter
 public class Database {
-    public String name;
-    public String engine;
-    public final RestAPI api;
-    public final Tables tables;
-    public Project project;
+    private String name;
+    private String engine;
+    private RestAPI api;
+    private Tables tables;
+    private Project project;
 
     public Database(Project project, String name, String engine) {
         this.name = name;
         this.engine = engine;
-        this.api = project.api;
+        this.api = project.getApi();
         this.tables = new Tables(this, api);
         this.project = project;
     }
