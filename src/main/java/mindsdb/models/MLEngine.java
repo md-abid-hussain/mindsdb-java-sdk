@@ -3,6 +3,9 @@ package mindsdb.models;
 import kong.unirest.core.json.JSONObject;
 import lombok.Getter;
 
+/**
+ * MLEngine class for handling ML engine.
+ */
 @Getter
 public class MLEngine {
     private final String name;

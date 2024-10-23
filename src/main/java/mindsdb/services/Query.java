@@ -6,6 +6,9 @@ import lombok.Setter;
 import mindsdb.connectors.RestAPI;
 import tech.tablesaw.api.Table;
 
+/**
+ * Query class for handling SQL queries.
+ */
 @Getter
 @Setter
 public class Query {
@@ -13,18 +16,32 @@ public class Query {
     private String sql;
     private final String database;
 
+    /**
+     * Constructs a new Query instance with the provided API, SQL query, and database.
+     * @param api    - RestAPI object
+     * @param sql   - SQL query
+     * @param database  - database name
+     */
     public Query(RestAPI api, String sql, String database) {
         this.api = api;
         this.sql = sql;
         this.database = database;
     }
 
+    /**
+     * Constructs a new Query instance with the provided API and SQL query.
+     * @param api   - RestAPI object
+     * @param sql - SQL query
+     */
     public Query(RestAPI api, String sql) {
         this(api, sql, null);
     }
-
+    
+    /**
+     * Fetch the result of the SQL query.
+     * @return Table object containing the result of the SQL query
+     */
     public Table fetch() {
-        System.out.println(sql);
         try {
             // Sending the SQL query to the API
             return api.sqlQuery(sql, database);

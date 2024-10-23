@@ -17,16 +17,20 @@ import lombok.Getter;
  * converting JSON data to a Skill object.
  * 
  * Attributes:
- * - name: The name of the skill.
- * - type: The type of the skill.
- * - params: The parameters of the skill.
+ * <ul>
+ * <li>name: The name of the skill.</li>
+ * <li>type: The type of the skill.</li>
+ * <li>params: The parameters of the skill.</li>
+ * </ul>
  * 
  * Methods:
- * - Skill(String name, String type, Map<String, Object> params):
+ * <ul>
+ * <li>Skill(String name, String type, Map&lt;String, Object&gt; params):
  * Constructs a new Skill instance with the specified name, type, and
- * parameters.
- * - static Skill fromJson(JsonObject json): Converts JSON data to a Skill
- * object.
+ * parameters.</li>
+ * <li>static Skill fromJson(JsonObject json): Converts JSON data to a Skill
+ * object.</li>
+ * </ul>
  */
 @Getter
 public class Skill {
@@ -34,6 +38,12 @@ public class Skill {
     private final String type;
     private final Map<String, Object> params;
 
+    /**
+     * Constructs a new Skill instance with the specified name, type, and parameters.
+     * @param name  The name of the skill.
+     * @param type  The type of the skill.
+     * @param params    The parameters of the skill.
+     */
     public Skill(String name, String type, Map<String, Object> params) {
         this.name = name;
         this.type = type;
@@ -82,6 +92,10 @@ public class Skill {
         return "Skill(name=" + name + ")";
     }
 
+    /**
+     * Returns a string representation of the Skill object.
+     * @return  A string representation of the Skill object.
+     */
     public String describe() {
         return "Skill(name=" + name + ", type=" + type + ", params=" + params + ")";
     }
@@ -101,6 +115,13 @@ public class Skill {
         return new Skill(name, type, params);
     }
 
+    /**
+     * Creates parameters for a skill with the specified database, tables, and description.
+     * @param database  The database name.
+     * @param tables    The list of table names.
+     * @param description   The description of the skill.   
+     * @return  The parameters for the skill.
+     */
     protected static Map<String, Object> createParams(String database, List<String> tables, String description) {
         JsonObject paramsJson = new JsonObject();
         paramsJson.addProperty("database", database);

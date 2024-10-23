@@ -23,12 +23,12 @@ public class ViewTest {
     public void testConstructor() {
         assertNotNull(view);
         assertEquals("testView", view.getName());
-        assertEquals(mockProject, view.project);
+        assertEquals(mockProject, view.getProject());
     }
 
     @Test
     public void testGetProject() {
-        assertEquals(mockProject, view.project);
+        assertEquals(mockProject, view.getProject());
     }
 
     @Test

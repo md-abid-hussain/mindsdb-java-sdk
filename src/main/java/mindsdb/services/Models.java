@@ -10,15 +10,28 @@ import mindsdb.models.ModelVersion;
 import mindsdb.models.Project;
 import tech.tablesaw.api.Table;
 
+/**
+ * Models service class for handling models.
+ */
 public class Models {
     private final Project project;
     private final RestAPI api;
 
+    /**
+     * Constructor for Models
+     * @param project  - Project object
+     * @param api     - RestAPI object
+     */
     public Models(Project project, RestAPI api) {
         this.project = project;
         this.api = api;
     }
 
+    /**
+     * List all models
+     * @param name - name of the model
+     * @return List of Model objects
+     */
     public List<Model> listModels(String name) {
         Map<String, Object> filters = new HashMap<>();
         if (name != null) {
@@ -49,6 +62,12 @@ public class Models {
         }).toList();
     }
 
+    /**
+     * List all models with version
+     * @param name - name of the model
+     * @param version - version of the model
+     * @return List of ModelVersion objects
+     */
     public List<ModelVersion> listModelsWithVersion(String name, Integer version) {
         Map<String, Object> filters = new HashMap<>();
         if (name != null) {
@@ -81,6 +100,11 @@ public class Models {
         }).toList();
     }
 
+    /**
+     * Get a specific model by name
+     * @param name - name of the model
+     * @return Model object
+     */
     public Model getModel(String name) {
         List<Model> models = listModels(name);
         if (models.isEmpty()) {
@@ -89,6 +113,12 @@ public class Models {
         return models.get(0);
     }
 
+    /**
+     * Get a specific model by name and version
+     * @param name  - name of the model
+     * @param version - version of the model
+     * @return ModelVersion object
+     */
     public ModelVersion getModelWithVersion(String name, Integer version) {
         List<ModelVersion> models = listModelsWithVersion(name, version);
         if (models.isEmpty()) {
@@ -97,6 +127,17 @@ public class Models {
         return models.get(0);
     }
 
+    /**
+     * Create a new model
+     * @param name - name of the model
+     * @param predict - predict column
+     * @param engine - engine name
+     * @param query - query for the model
+     * @param database - database name
+     * @param options   - options for the model
+     * @param timeseriesOptions - timeseries options for the model
+     * @return Model object
+     */
     public Model create(
             String name,
             String predict,

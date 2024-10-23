@@ -9,9 +9,16 @@ import mindsdb.models.Handler;
 import mindsdb.models.MLEngine;
 import tech.tablesaw.api.Table;
 
+/**
+ * MLEngines service class for handling ML engines.
+ */
 public class MLEngines {
     private final RestAPI api;
 
+    /**
+     * Constructor for MLEngines
+     * @param api   - RestAPI object
+     */
     public MLEngines(RestAPI api) {
         this.api = api;
     }
@@ -26,10 +33,19 @@ public class MLEngines {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * List all ML engines
+     * @return List of MLEngine objects
+     */
     public List<MLEngine> list() {
         return _listMLEngines();
     }
 
+    /**
+     * Get a specific ML engine by name
+     * @param name  - name of the engine
+     * @return MLEngine object
+     */
     public MLEngine get(String name) {
         return _listMLEngines().stream()
                 .filter(engine -> engine.getName().equals(name))
@@ -37,10 +53,24 @@ public class MLEngines {
                 .orElseThrow(() -> new IllegalArgumentException("MLEngine doesn't exist"));
     }
 
+    /**
+     * Create a new ML engine
+     * @param name         - name of the engine
+     * @param handler     - handler of the engine
+     * @param connectionData - connection data for the engine
+     * @return MLEngine object
+     */
     public MLEngine create(String name, Handler handler, JSONObject connectionData) {
         return create(name, handler.getName(), connectionData);
     }
 
+    /**
+     * Create a new ML engine
+     * @param name        - name of the engine
+     * @param handlerName - handler of the engine 
+     * @param connectionData - connection data for the engine
+     * @return MLEngine object
+     */
     public MLEngine create(String name, String handlerName, JSONObject connectionData) {
         StringBuilder astQuery = new StringBuilder("CREATE ML_ENGINE IF NOT EXISTS " + name + " FROM " + handlerName);
         if (connectionData != null) {
@@ -57,44 +87,32 @@ public class MLEngines {
         return new MLEngine(name, handlerName, connectionData);
     }
 
+    /**
+     * Create a new ML engine
+     * @param name  - name of the engine
+     * @param handler - handler of the engine
+     * @return MLEngine object
+     */
     public MLEngine create(String name, Handler handler) {
         return create(name, handler, null);
     }
 
+    /**
+     * Create a new ML engine
+     * @param name  - name of the engine
+     * @param handlerName  - handler of the engine
+     * @return  MLEngine object
+     */
     public MLEngine create(String name, String handlerName) {
         return create(name, handlerName, null);
     }
 
-    // Method to create BYOM with a single requirement
-    // public MLEngine createBYOM(String name, String code, String requirements) {
-    // return createBYOMEngine(name, code, requirements);
-    // }
+    //  TODO: BYOM
 
-    // // Method to create BYOM with a list of requirements
-    // public MLEngine createBYOM(String name, String code, List<String>
-    // requirements) {
-    // String requirementsStr = String.join(",", requirements);
-    // return createBYOMEngine(name, code, requirementsStr);
-    // }
-
-    // // Private method to handle the common logic
-    // private MLEngine createBYOMEngine(String name, String code, String
-    // requirements) {
-    // // Build the query to create the BYOM engine
-    // StringBuilder astQuery = new StringBuilder("CREATE BYOM_ENGINE IF NOT EXISTS
-    // " + name + " WITH CODE " + code);
-    // if (requirements != null && !requirements.isEmpty()) {
-    // astQuery.append(" REQUIREMENTS ").append(requirements);
-    // }
-    // astQuery.append(";");
-
-    // // Execute the query using the API
-    // api.sqlQuery(astQuery.toString());
-
-    // // Return the created MLEngine object
-    // return new MLEngine(name, code, new JSONObject());
-    // }
-
+    /**
+     * Drop an ML engine
+     * @param name  - name of the engine
+     */
     public void drop(String name) {
         String astQuery = String.format("DROP ML_ENGINE %s;", name);
         api.sqlQuery(astQuery);

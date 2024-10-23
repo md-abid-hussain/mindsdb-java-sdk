@@ -5,10 +5,6 @@ package mindsdb.models.skill;
  * retrieval tasks.
  * It extends the Skill class and is initialized with a name, knowledge base,
  * and description.
- * 
- * @param name          The name of the retrieval skill.
- * @param knoweldgeBase The knowledge base associated with the retrieval skill.
- * @param description   A brief description of the retrieval skill.
  */
 public class RetrievalSkill extends Skill {
 

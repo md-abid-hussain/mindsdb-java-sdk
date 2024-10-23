@@ -14,18 +14,26 @@ import mindsdb.services.Query;
 import mindsdb.services.Skills;
 import mindsdb.services.Views;
 
+/**
+ * Project class for handling project.
+ */
 @Getter
 public class Project {
-    public final String name;
-    public final RestAPI api;
-    public final Jobs jobs;
-    public final Views views;
-    public final Models models;
-    public final KnowledgeBases knowledgeBases;
-    public final Skills skills;
-    public final Databases databases;
-    public final MLEngines mlEngines;
+    private final String name;
+    private final RestAPI api;
+    private final Jobs jobs;
+    private final Views views;
+    private final Models models;
+    private final KnowledgeBases knowledgeBases;
+    private final Skills skills;
+    private final Databases databases;
+    private final MLEngines mlEngines;
 
+    /**
+     * Constructor for Project
+     * @param api - RestAPI object
+     * @param name - name of the project
+     */
     public Project(RestAPI api, String name) {
         this.name = name;
         this.api = api;
@@ -48,9 +56,10 @@ public class Project {
     }
 
     /**
-     * Get the name of the project
+     * Create a Query object
      * 
-     * @return name of the project
+     * @param sql SQL string
+     * @return  Query object
      */
     public Query query(String sql) {
         return new Query(api, sql, name);
@@ -275,20 +284,20 @@ public class Project {
     }
 
     /**
-     * Get a model by name
-     * 
-     * @param name name of the model
-     * @return Model object
+     * List all models with a specific name and version
+     * @param name  name of the model
+     * @param version   version of the model
+     * @return  list of ModelVersion objects
      */
     public List<ModelVersion> listModelsWithVersion(String name, Integer version) {
         return models.listModelsWithVersion(name, version);
     }
 
     /**
-     * Get a model by name
-     * 
-     * @param name name of the model
-     * @return Model object
+     * Get a model with a specific name and version
+     * @param name  name of the model
+     * @param version   version of the model
+     * @return  ModelVersion object
      */
     public ModelVersion getModelWithVersion(String name, int version) {
         return models.getModelWithVersion(name, version);

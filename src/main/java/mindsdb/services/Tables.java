@@ -8,11 +8,19 @@ import mindsdb.models.Database;
 import mindsdb.models.MDBTable;
 import tech.tablesaw.api.Table;
 
+/**
+ * Tables service class for handling tables.
+ */
 @Getter
 public class Tables {
-    public final Database database;
-    public final RestAPI api;
+    private final Database database;
+    private final RestAPI api;
 
+    /**
+     * Constructor for Tables
+     * @param database  Database
+     * @param api    RestAPI
+     */
     public Tables(Database database, RestAPI api) {
         this.database = database;
         this.api = api;
@@ -42,7 +50,7 @@ public class Tables {
     /**
      * Get a table by name
      * 
-     * @param tableName
+     * @param tableName Name of the table
      * @return Table
      */
     public MDBTable get(String tableName) {
@@ -78,11 +86,10 @@ public class Tables {
 
     /**
      * Create a table from a DataFrame
-     * 
-     * @param name    Name of the table
-     * @param query   DataFrame to create the table from
-     * @param replace Replace the table if it already exists
-     * @return Table
+     * @param name  Name of the table
+     * @param df    DataFrame
+     * @param replace           Replace the table if it already exists
+     * @return  Table
      */
     public MDBTable create(String name, tech.tablesaw.api.Table df, Boolean replace) {
         this.api.uploadFile(name, df);
@@ -101,7 +108,7 @@ public class Tables {
     /**
      * Drop a table by name
      * 
-     * @param tableName
+     * @param tableName Name of the table
      */
     public void drop(String tableName) {
         String sql = String.format("DROP TABLE %s", this.database.getName() + "." + tableName);

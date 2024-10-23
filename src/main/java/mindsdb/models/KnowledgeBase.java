@@ -335,7 +335,7 @@ public class KnowledgeBase extends Query implements Cloneable {
 
             // Handle deep copy for storage if necessary
             if (this.storage != null) {
-                cloned.storage = new MDBTable(this.storage.db, this.storage.name);
+                cloned.storage = new MDBTable(this.storage.getDb(), this.storage.getName());
             }
 
             // Handle deep copy for model if necessary

@@ -7,14 +7,16 @@ import java.util.List;
  * tasks.
  * It extends the Skill class and is initialized with a name, list of tables,
  * database, and description.
- * 
- * @param name        The name of the SQL skill.
- * @param tables      The list of tables associated with the SQL skill.
- * @param database    The database associated with the SQL skill.
- * @param description A brief description of the SQL skill.
- * 
  */
 public class SQLSkill extends Skill {
+
+    /**
+     * Constructs a new SQLSkill instance with the specified name, list of tables,
+     * @param name      The name of the skill. 
+     * @param tables    The list of tables.
+     * @param database  The database. 
+     * @param description   The description of the skill.
+     */
     public SQLSkill(String name, List<String> tables, String database, String description) {
         super(name, "sql", createParams(database, tables, description));
     }

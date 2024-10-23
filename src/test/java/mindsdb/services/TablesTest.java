@@ -45,8 +45,8 @@ class TablesTest {
         List<MDBTable> result = tables.list();
 
         assertEquals(2, result.size());
-        assertEquals("table1", result.get(0).name);
-        assertEquals("table2", result.get(1).name);
+        assertEquals("table1", result.get(0).getName());
+        assertEquals("table2", result.get(1).getName());
     }
 
     @Test
@@ -55,7 +55,7 @@ class TablesTest {
         MDBTable result = tables.get(tableName);
 
         assertNotNull(result);
-        assertEquals(tableName, result.name);
+        assertEquals(tableName, result.getName());
     }
 
     @Test
@@ -67,7 +67,7 @@ class TablesTest {
         MDBTable result = tables.create(tableName, query, true);
 
         assertNotNull(result);
-        assertEquals(tableName, result.name);
+        assertEquals(tableName, result.getName());
         verify(api, times(1)).sqlQuery(anyString());
     }
 
@@ -77,11 +77,18 @@ class TablesTest {
         tech.tablesaw.api.Table df = tech.tablesaw.api.Table.create("new_table");
         MDBTable mockTable = mock(MDBTable.class);
         doNothing().when(api).uploadFile(anyString(), any(tech.tablesaw.api.Table.class));
-        mockTable.name = tableName;
+        try {
+            java.lang.reflect.Field nameField = MDBTable.class.getDeclaredField("name");
+            nameField.setAccessible(true);
+            nameField.set(mockTable, tableName);
+            when(mockTable.getName()).thenReturn(tableName);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
         MDBTable result = tables.create(tableName, df, true);
 
         assertNotNull(result);
-        assertEquals(mockTable.name, result.name);
+        assertEquals(mockTable.getName(), result.getName());
         verify(api, times(1)).uploadFile(anyString(),
                 any(tech.tablesaw.api.Table.class));
     }

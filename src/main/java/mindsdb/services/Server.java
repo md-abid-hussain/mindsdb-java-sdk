@@ -13,20 +13,54 @@ import mindsdb.models.MLEngine;
 import mindsdb.models.Project;
 import mindsdb.models.skill.Skill;
 
+/**
+ * The Server class extends the Project class and provides various services such as managing databases,
+ * ML engines, ML handlers, data handlers, agents, and skills. It also provides methods to interact with
+ * these services.
+ */
 public class Server extends Project {
+    /**
+     * The Databases service for managing databases.
+     */
     public final Databases databases;
+
+    /**
+     * The MLEngines service for managing machine learning engines.
+     */
     public final MLEngines mlEngines;
+
+    /**
+     * The MLHandlers service for managing machine learning handlers.
+     */
     public final MLHandlers mlHandlers;
+
+    /**
+     * The DataHandlers service for managing data handlers.
+     */
     public final DataHandlers dataHandlers;
+
+    /**
+     * The Agents service for managing agents.
+     */
     public final Agents agents;
+
+    /**
+     * The Skills service for managing skills.
+     */
     public final Skills skills;
 
+    /**
+     * The Projects service for managing projects.
+     */
     public final Projects projects;
-    // public final RestAPI api;
 
+    /**
+     * Constructs a new Server instance with the specified RestAPI.
+     *
+     * @param api The RestAPI instance to be used by the server.
+     */
     public Server(RestAPI api) {
         super(api, "mindsdb");
-        // this.api = api;
         this.projects = new Projects(this, api);
         this.mlEngines = new MLEngines(api);
         this.mlHandlers = new MLHandlers(api);

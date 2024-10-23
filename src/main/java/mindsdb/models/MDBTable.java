@@ -29,7 +29,6 @@ import tech.tablesaw.api.Row;
  * table.update(Map.of("column1", "new_value"), "column2=value2");
  * }
  * </pre>
- * </p>
  * 
  * <p>
  * The class also overrides the {@code toString} method to provide a string
@@ -42,9 +41,9 @@ import tech.tablesaw.api.Row;
  */
 @Getter
 public class MDBTable extends Query {
-    public String name;
-    public String tableName;
-    public Database db;
+    private String name;
+    private String tableName;
+    private Database db;
     private Map<String, String> filters;
     private Integer limit;
     private String trackColumn;
@@ -178,7 +177,7 @@ public class MDBTable extends Query {
     /**
      * Track the table by a column
      * 
-     * @param column
+     * @param column - Column to track the table by
      * @return Table object with the track column set
      */
     public MDBTable track(String column) {
@@ -252,8 +251,7 @@ public class MDBTable extends Query {
      *
      * >>> table.delete("a=1", "b=2")
      *
-     * @param filters
-     * @return a Query object representing the delete operation
+     * @param filters array of filters to filter deleted rows, delete("column=value", ...)
      */
     public void delete(String... filters) {
 
@@ -275,8 +273,7 @@ public class MDBTable extends Query {
      * Update table by condition
      * 
      * @param values  a map representing fields to update
-     * @param filters array of filters to filter updated rows, {"column=value", ...}
-     * @return a Query object representing the update operation
+     * @param filters array of filters to filter updated rows, update(values, "column=value", ...)
      */
     public void update(Map<String, Object> values, String... filters) {
         if (values == null || values.isEmpty()) {

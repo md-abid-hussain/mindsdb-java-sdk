@@ -13,10 +13,18 @@ import mindsdb.models.Project;
 import tech.tablesaw.api.Row;
 import tech.tablesaw.columns.Column;
 
+/**
+ * Service class for managing knowledge bases in a MindsDB project.
+ */
 public class KnowledgeBases {
     private final Project project;
     private final RestAPI api;
 
+    /**
+     * Constructs a new KnowledgeBases instance with the provided project and API.
+     * @param project The project associated with the knowledge bases.
+     * @param api The API instance used to interact with the backend.
+     */
     public KnowledgeBases(Project project, RestAPI api) {
         this.project = project;
         this.api = api;
@@ -44,10 +52,20 @@ public class KnowledgeBases {
         return knowledgeBases;
     }
 
+    /**
+     * List all knowledge bases in the project.
+     * @return List of knowledge bases.
+     */
     public List<KnowledgeBase> list() {
         return listKnowledgeBases(null);
     }
 
+    /**
+     * Get a knowledge base by name.
+     * @param name The name of the knowledge base.
+     * @return The knowledge base with the specified name.
+     * @throws IllegalArgumentException if the knowledge base does not exist.
+     */
     public KnowledgeBase get(String name) {
         List<KnowledgeBase> knowledgeBases = listKnowledgeBases(name);
         if (knowledgeBases.isEmpty()) {
@@ -56,6 +74,17 @@ public class KnowledgeBases {
         return knowledgeBases.get(0);
     }
 
+    /**
+     * Create a new knowledge base.
+     * @param name The name of the knowledge base.
+     * @param model The model to use for the knowledge base.
+     * @param storage The storage to use for the knowledge base.
+     * @param metadataColumns The metadata columns for the knowledge base.
+     * @param contentColumns The content columns for the knowledge base.
+     * @param idColumn The ID column for the knowledge base.
+     * @param params Additional parameters for the knowledge base.
+     * @return The created knowledge base.
+     */
     public KnowledgeBase create(
             String name,
             Model model,
@@ -86,7 +115,7 @@ public class KnowledgeBases {
         String astQuery = "CREATE KNOWLEDGE BASE " + project.getName() + "." + name;
 
         String modelName = model != null ? String.format("%s.%s", model.getProject().getName(), model.getName()) : null;
-        String storageName = storage != null ? String.format("%s.%s", storage.db.getName(), storage.name) : null;
+        String storageName = storage != null ? String.format("%s.%s", storage.getDb().getName(), storage.getName()) : null;
 
         if (modelName != null || storageName != null || !paramsOut.isEmpty()) {
             astQuery += " USING";
@@ -106,6 +135,10 @@ public class KnowledgeBases {
         return get(name);
     }
 
+    /**
+     * Drop a knowledge base by name.
+     * @param name The name of the knowledge base to drop.
+     */
     public void drop(String name) {
         String astQuery = String.format("DROP KNOWLEDGE BASE %s.%s;", project.getName(), name);
         api.sqlQuery(astQuery, project.getName());

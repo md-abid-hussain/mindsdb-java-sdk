@@ -8,6 +8,9 @@ import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Model class for handling model.
+ */
 @Getter
 @Setter
 public class Model {
@@ -17,6 +20,12 @@ public class Model {
     private String name;
     private Integer version;
 
+    /**
+     * Constructor for Model
+     * 
+     * @param project Project object
+     * @param data    Data for the model
+     */
     public Model(Project project, Map<String, Object> data) {
         this.project = project;
         this.name = data.get("name") != null ? data.get("name").toString() : null;
@@ -24,6 +33,11 @@ public class Model {
         this.data = data;
     }
 
+    /**
+     * Get identifier of the model
+     * 
+     * @return identifier of the model
+     */
     public String getIdentifier() {
         String identifier = project.getName() + "." + name;
 
@@ -69,7 +83,7 @@ public class Model {
      * Make prediction with the model
      * 
      * @param data   input data
-     * @param params
+     * @param params    prediction parameters
      * @return prediction result in Tablesaw Table
      */
     public tech.tablesaw.api.Table predict(Map<String, String> data, Map<String, String> params) {
@@ -87,6 +101,11 @@ public class Model {
                 version);
     }
 
+    /**
+     * Wait for training to complete
+     * 
+     * @throws InterruptedException if the thread is interrupted
+     */
     public void waitComplete() throws InterruptedException {
         for (int i = 0; i < 400; i++) {
             TimeUnit.MILLISECONDS.sleep(300);
@@ -141,6 +160,11 @@ public class Model {
         return project.getApi().sqlQuery(astQuery);
     }
 
+    /**
+     * Return description of the model
+     * 
+     * @return dataframe with result of description
+     */
     public tech.tablesaw.api.Table describe() {
         return describe(null);
     }

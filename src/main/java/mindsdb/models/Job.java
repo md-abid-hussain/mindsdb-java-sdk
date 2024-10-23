@@ -17,33 +17,33 @@ import tech.tablesaw.api.Table;
  * the job, refreshing the job, adding a query to the job, getting the job
  * history, and exiting the job.
  * 
- * Attributes:
- * - project: The project associated with the job.
- * - name: The name of the job.
- * - queryString: The query string associated with the job.
- * - data: Additional data for the job in JSON format.
- * - queries: A list of queries associated with the job.
- * - startAt: The timestamp when the job starts.
- * - endAt: The timestamp when the job ends.
- * - nextRunAt: The timestamp when the job runs next.
- * - scheduleStr: The schedule string for the job.
- * - createCallback: The callback function for creating the job.
+ * <p>Attributes:</p>
+ * <ul>
+ *   <li>project: The project associated with the job.</li>
+ *   <li>name: The name of the job.</li>
+ *   <li>queryString: The query string associated with the job.</li>
+ *   <li>data: Additional data for the job in JSON format.</li>
+ *   <li>queries: A list of queries associated with the job.</li>
+ *   <li>startAt: The timestamp when the job starts.</li>
+ *   <li>endAt: The timestamp when the job ends.</li>
+ *   <li>nextRunAt: The timestamp when the job runs next.</li>
+ *   <li>scheduleStr: The schedule string for the job.</li>
+ *   <li>createCallback: The callback function for creating the job.</li>
+ * </ul>
  * 
- * Methods:
- * - Job(Project project, String name, Map<String, String> data,
- * CreateJobCallback createCallback): Constructs a new Job instance with the
- * specified attributes.
- * - Job(Project project, String name, CreateJobCallback createCallback):
- * Constructs a new Job instance with the specified attributes, without data.
- * - Job(Project project, String name): Constructs a new Job instance with the
- * specified attributes, without data and create callback.
- * - String toString(): Returns a string representation of the job.
- * - void exit(): Exits the job.
- * - void close(): Closes the job.
- * - void refresh(): Refreshes the job.
- * - void addQuery(Query query): Adds a query to the job.
- * - void addQuery(String query): Adds a query to the job.
- * - Table getHistory(): Gets the job history.
+ * <p>Methods:</p>
+ * <ul>
+ *   <li>Job(Project project, String name, Map&lt;String, String&gt; data, CreateJobCallback createCallback): Constructs a new Job instance with the specified attributes.</li>
+ *   <li>Job(Project project, String name, CreateJobCallback createCallback): Constructs a new Job instance with the specified attributes, without data.</li>
+ *   <li>Job(Project project, String name): Constructs a new Job instance with the specified attributes, without data and create callback.</li>
+ *   <li>String toString(): Returns a string representation of the job.</li>
+ *   <li>void exit(): Exits the job.</li>
+ *   <li>void close(): Closes the job.</li>
+ *   <li>void refresh(): Refreshes the job.</li>
+ *   <li>void addQuery(Query query): Adds a query to the job.</li>
+ *   <li>void addQuery(String query): Adds a query to the job.</li>
+ *   <li>Table getHistory(): Gets the job history.</li>
+ * </ul>
  */
 @Getter
 public class Job implements AutoCloseable {
@@ -90,6 +90,11 @@ public class Job implements AutoCloseable {
         this(project, name, null, createCallback);
     }
 
+    /**
+     * Constructs a new Job instance with the specified attributes, without data and create callback.
+     * @param project - the project associated with the job
+     * @param name  - the name of the job
+     */
     public Job(Project project, String name) {
         this(project, name, null);
     }

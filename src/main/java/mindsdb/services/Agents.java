@@ -37,6 +37,7 @@ import mindsdb.utils.HttpException;
  * 
  * <p>
  * Key functionalities include:
+ * </p>
  * <ul>
  * <li>Listing all agents in a project</li>
  * <li>Retrieving a specific agent by name</li>
@@ -47,7 +48,6 @@ import mindsdb.utils.HttpException;
  * <li>Adding files, web pages, and databases to agents</li>
  * <li>Validating URLs</li>
  * </ul>
- * </p>
  * 
  * <p>
  * The class relies on the `RestAPI` for communication with the MindsDB backend
@@ -59,9 +59,9 @@ import mindsdb.utils.HttpException;
  * 
  * <p>
  * Example usage:
+ * </p>
  * 
- * <pre>
- * {@code
+ * <pre>{@code
  * Project project = new Project("project_name");
  * RestAPI api = new RestAPI("api_url");
  * Agents agentsService = new Agents(project, api);
@@ -74,9 +74,7 @@ import mindsdb.utils.HttpException;
  * 
  * // Add a file to an agent
  * agentsService.addFile("agent_name", "file_path", "file_description", "knowledge_base_name");
- * }
- * </pre>
- * </p>
+ * }</pre>
  * 
  * @see mindsdb.connectors.RestAPI
  * @see mindsdb.models.agent.Agent
@@ -367,10 +365,17 @@ public class Agents {
         this.addWebPages(name, List.of(url), description, knowledgeBase, crawlDepth, filters);
     }
 
+    /**
+     * Add databases to an agent
+     * @param name        - Name of the agent
+     * @param database    - Name of the database
+     * @param tables      - List of tables
+     * @param description - Description of the database
+     */
     public void addDatabase(String name, String database, List<String> tables, String description) {
         Database db = this.databases.get(name);
         Set<String> tableSet = Set.of(
-                db.listTables().stream().map(t -> t.name).toArray(String[]::new));
+                db.listTables().stream().map(t -> t.getName()).toArray(String[]::new));
 
         for (String table : tables) {
             if (!tableSet.contains(table)) {

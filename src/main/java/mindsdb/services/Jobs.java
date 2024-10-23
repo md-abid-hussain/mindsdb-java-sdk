@@ -14,11 +14,19 @@ import mindsdb.models.Project;
 import mindsdb.utils.CreateJobCallback;
 import tech.tablesaw.api.Table;
 
+/**
+ * The Jobs class provides methods to list, get, create, and drop jobs in a project.
+ */
 public class Jobs {
 
     private final Project project;
     private final RestAPI api;
 
+    /**
+     * Constructs a new Jobs instance with the provided project and API.
+     * @param project The project associated with the jobs. 
+     * @param api The API instance used to interact with the backend.
+     */
     public Jobs(Project project, RestAPI api) {
         this.project = project;
         this.api = api;

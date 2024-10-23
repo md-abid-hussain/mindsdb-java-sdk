@@ -23,6 +23,9 @@ import mindsdb.utils.HttpException;
 import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 
+/**
+ * RestAPI class for handling REST API requests.
+ */
 public final class RestAPI {
 
     private final String url;
@@ -33,6 +36,16 @@ public final class RestAPI {
     private final Gson gson = new Gson();
     private UnirestInstance session;
 
+    /**
+     * Constructor for RestAPI
+     * @param url           URL to MindsDB server
+     * @param login         User login, for cloud version it contains email
+     * @param password      User password to login (for cloud version)
+     * @param apiKey        API key to authenticate (for cloud version)
+     * @param isManaged     Whether or not the URL points to a managed instance
+     * @param headers       Additional headers to send with the connection, optional
+     * 
+     */
     public RestAPI(String url, String login, String password, String apiKey, boolean isManaged,
             Map<String, String> headers) {
         this.url = url;
@@ -60,6 +73,14 @@ public final class RestAPI {
         if (this.username != null && this.password != null) {
             this.login();
         }
+    }
+
+    /**
+     * Get the URL of the MindsDB server
+     * @return URL of the MindsDB server
+     */
+    public String getUrl() {
+        return this.url;
     }
 
     private void raiseForStatus(HttpResponse<String> response) {
@@ -181,6 +202,9 @@ public final class RestAPI {
         return sqlQuery(sql, null);
     }
 
+    /**
+     * Close the session
+     */
     public void closeSession() {
         this.session.close();
     }
@@ -191,10 +215,11 @@ public final class RestAPI {
      * @param project  Name of the project
      * @param name     Name of the Agent
      * @param model    Name of the model
-     * @param provider
-     * @param skills
-     * @param params
-     * @throws UnirestException
+     * @param provider Name of the provider
+     * @param skills   List of skills
+     * @param params   Additional parameters
+     * @throws UnirestException when the request fails when the request fails
+     * @return JsonObject containing the agent details
      */
     public JsonObject createAgent(String project, String name, String model, String provider, List<String> skills,
             Map<String, Object> params) {
@@ -220,6 +245,17 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonObject.class);
     }
 
+    /**
+     * Update an agent
+     * @param project      Project name 
+     * @param name          Agent name
+     * @param updatedName   Updated agent name
+     * @param updatedModel Updated model name
+     * @param skillsToAdd  List of skills to add
+     * @param skillsToRemove    List of skills to remove
+     * @param updatedParams    Updated parameters
+     * @return  JsonObject containing the updated agent details
+     */
     public JsonObject updateAgent(String project, String name, String updatedName, String updatedModel,
             List<String> skillsToAdd, List<String> skillsToRemove, JsonObject updatedParams) {
         String endpoint = this.url + "/api/projects/" + project + "/agents/" + name;
@@ -242,7 +278,8 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonObject.class);
     }
 
-    public void uploadByom(String name, String code, String requirements) throws UnirestException {
+    
+    private void uploadByom(String name, String code, String requirements) throws UnirestException {
         HttpResponse<String> response = Unirest.put(this.url + "/api/handlers/byom/" + name)
                 .field("code", code)
                 .field("modules", requirements)
@@ -251,6 +288,11 @@ public final class RestAPI {
         raiseForStatus(response);
     }
 
+    /**
+     * Upload a custom handler to MindsDB
+     * @return JsonObject containing the response
+     *  @throws UnirestException  when the request fails
+     */
     public JsonObject status() throws UnirestException {
         HttpResponse<String> response = session.get(this.url + "/api/status").asString();
 
@@ -259,6 +301,12 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonObject.class);
     }
 
+    /**
+     * Get the status of the MindsDB server
+     * @param project Name of the project
+     * @return JsonObject containing the status of the project
+     * @throws UnirestException when the request fails
+     */
     public JsonArray agents(String project) throws UnirestException {
         HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/agents").asString();
 
@@ -267,6 +315,13 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonArray.class);
     }
 
+    /**
+     * Get the status of the MindsDB server 
+     * @param project Name of the project
+     * @param name  Name of the agent
+     * @return JsonObject containing the status of the agent
+     * @throws UnirestException when the request fails
+     */
     public JsonObject agent(String project, String name) throws UnirestException {
         HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/agents/" + name)
                 .asString();
@@ -276,6 +331,14 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonObject.class);
     }
 
+    /**
+     * Get the status of the MindsDB server
+     * @param project   Name of the project
+     * @param name    Name of the agent
+     * @param messages  List of messages
+     * @return  JsonObject containing the completion of the agent
+     * @throws UnirestException when the request fails 
+     */
     public JsonObject agentCompletion(String project, String name, List<JsonObject> messages) throws UnirestException {
         JsonObject body = new JsonObject();
         body.add("messages", gson.toJsonTree(messages));
@@ -291,6 +354,12 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonObject.class);
     }
 
+    /**
+     * Delete an agent  
+     * @param project   Name of the project
+     * @param name  Name of the agent
+     * @throws UnirestException when the request fails     
+     */
     public void deleteAgent(String project, String name) throws UnirestException {
         HttpResponse<String> response = Unirest.delete(this.url + "/api/projects/" + project + "/agents/" + name)
                 .asString();
@@ -298,6 +367,12 @@ public final class RestAPI {
         raiseForStatus(response);
     }
 
+    /**
+     *  Get skills of a project
+     * @param project Name of the project
+     * @return  JsonArray containing the skills of the project
+     * @throws UnirestException when the request fails     
+     */
     public JsonArray skills(String project) throws UnirestException {
         HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/skills").asString();
 
@@ -306,6 +381,13 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonArray.class);
     }
 
+    /**
+     * Get a skill of a project
+     * @param project   Name of the project 
+     * @param name  Name of the skill
+     * @return  JsonObject containing the skill details
+     * @throws UnirestException when the request fails
+     */
     public JsonObject skill(String project, String name) throws UnirestException {
         HttpResponse<String> response = session.get(this.url + "/api/projects/" + project + "/skills/" + name)
                 .asString();
@@ -315,6 +397,14 @@ public final class RestAPI {
         return gson.fromJson(response.getBody(), JsonObject.class);
     }
 
+    /**
+     * Create a skill
+     * @param project  Name of the project
+     * @param name  Name of the skill   
+     * @param type  Type of the skill
+     * @param params    Parameters of the skill
+     * @throws UnirestException when the request fails
+     */
     public void createSkill(String project, String name, String type, JsonObject params) throws UnirestException {
         JsonObject body = new JsonObject();
         JsonObject skill = new JsonObject();
@@ -332,6 +422,15 @@ public final class RestAPI {
         raiseForStatus(response);
     }
 
+    /**
+     * Update a skill
+     * @param project   Name of the project
+     * @param name  Name of the skill
+     * @param updatedName   Updated name of the skill
+     * @param updatedType   Updated type of the skill
+     * @param updatedParams Updated parameters of the skill
+     * @throws UnirestException when the request fails
+     */
     public void updateSkill(String project, String name, String updatedName, String updatedType,
             JsonObject updatedParams) throws UnirestException {
         JsonObject body = new JsonObject();
@@ -350,6 +449,12 @@ public final class RestAPI {
         raiseForStatus(response);
     }
 
+    /**
+     * Delete a skill
+     * @param project  Name of the project
+     * @param name  Name of the skill
+     * @throws UnirestException when the request fails 
+     */
     public void deleteSkill(String project, String name) throws UnirestException {
         HttpResponse<String> response = session.delete(this.url + "/api/projects/" + project + "/skills/" + name)
                 .asString();
@@ -357,6 +462,13 @@ public final class RestAPI {
         raiseForStatus(response);
     }
 
+    /**
+     * Insert files into a knowledge base
+     * @param project   Name of the project
+     * @param knowledgeBaseName     Name of the knowledge base
+     * @param fileNames     List of file names
+     * @throws UnirestException when the request fails 
+     */
     public void insertFilesIntoKnowledgeBase(String project, String knowledgeBaseName, List<String> fileNames)
             throws UnirestException {
         JsonObject body = new JsonObject();
@@ -374,6 +486,15 @@ public final class RestAPI {
         raiseForStatus(response);
     }
 
+    /**
+     * Insert webpages into a knowledge base
+     * @param project  Name of the project
+     * @param knowledgeBaseName         Name of the knowledge base
+     * @param urls  List of URLs
+     * @param crawlDepth    Crawl depth
+     * @param filters   List of filters
+     * @throws UnirestException when the request fails
+     */
     public void insertWebpagesIntoKnowledgeBase(String project, String knowledgeBaseName, List<String> urls,
             int crawlDepth, List<String> filters) throws UnirestException {
         JsonObject body = new JsonObject();
@@ -393,10 +514,11 @@ public final class RestAPI {
         raiseForStatus(response);
     }
 
-    public String getUrl() {
-        return url;
-    }
-
+    /**
+     * Insert data into a knowledge base
+     * @param item Name of the item
+     * @return Tablesaw Table containing the data
+     */
     public Table objectsTree(String item) {
         HttpResponse<String> response = this.session.get(this.url + "/api/tree/" + item)
                 .header("Content-Type", "application/json")
@@ -423,6 +545,10 @@ public final class RestAPI {
         return table;
     }
 
+    /**
+     * Insert data into a knowledge base
+     * @return Tablesaw Table containing the data
+     */
     public Table objectsTree() {
         return objectsTree("");
     }
@@ -548,10 +674,9 @@ public final class RestAPI {
     }
 
     /**
-     * Read a file as bytes
-     * 
-     * @param filePath Path to the file
-     * @return Byte array of the file
+     * Read the content of a file as bytes
+     * @param filePath  Path to the file
+     * @return  Byte array of the file
      */
     public static byte[] readFileAsBytes(String filePath) {
         try {
@@ -575,6 +700,11 @@ public final class RestAPI {
         return fileData;
     }
 
+    /**
+     * Read the content of a file as a webpage
+     * @param url        URL of the webpage
+     * @return  Content of the webpage
+     */
     public static String readFileAsWebpage(String url) {
         HttpResponse<String> response = Unirest.get(url).asString();
         return response.getBody();
@@ -613,11 +743,22 @@ public final class RestAPI {
         uploadData(name, fileData);
     }
 
+    /**
+     * Upload a file to the MindsDB server
+     * @param name  Name of the file
+     * @param data  Tablesaw Table containing the data
+     */
     public void uploadFile(String name, Table data) {
         byte[] fileData = readDataFrameAsCSV(data);
         uploadData(name, fileData);
     }
 
+    /**
+     * Upload a file to the MindsDB server
+     * @param name  Name of the file
+     * @return  Tablesaw Table containing the data
+     * @throws UnirestException when the request fails
+     */
     public JsonObject getFileMetadata(String name) throws UnirestException {
         HttpResponse<String> response = session.get(url + "/api/files").asString();
 

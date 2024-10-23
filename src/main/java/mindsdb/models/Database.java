@@ -34,15 +34,11 @@ import mindsdb.services.Tables;
  * MDBTable newTable = db.createTable("new_table", someDataFrame, true);
  * }
  * </pre>
- * </p>
  * 
- * <p>
  * The class also overrides the {@code toString} method to provide a string
  * representation
  * of the Database object.
- * </p>
  * 
- * @see Server
  * @see Project
  * @see RestAPI
  * @see Tables

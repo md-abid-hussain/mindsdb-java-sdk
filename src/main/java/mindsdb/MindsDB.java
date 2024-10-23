@@ -5,6 +5,9 @@ import java.util.Map;
 import mindsdb.connectors.RestAPI;
 import mindsdb.services.Server;
 
+/**
+ * MindsDB class for connecting to MindsDB server.
+ */
 public class MindsDB {
     private static final String DEFAULT_LOCAL_API_URL = "http://127.0.0.1:47334";
     private static final String DEFAULT_CLOUD_API_URL = "https://cloud.mindsdb.com";
@@ -37,7 +40,8 @@ public class MindsDB {
     }
 
     /**
-     * Create a connection to local MindsDB server running on port 47334.
+     * Create a connection to MindsDB server.
+     * @return Server object.
      */
     public static Server connect() {
         return connect(null, null, null, null, false, null);
@@ -47,6 +51,7 @@ public class MindsDB {
      * Create a connection to MindsDB server.
      *
      * @param url URL to MindsDB server.
+     * @return Server object.
      */
     public static Server connect(String url) {
         return connect(url, null, null, null, false, null);
@@ -58,6 +63,7 @@ public class MindsDB {
      * @param url      URL to MindsDB server.
      * @param login    User login, for cloud version it contains email.
      * @param password User password to login (for cloud version).
+     * @return Server object.
      */
     public static Server connect(String url, String login, String password) {
         return connect(url, login, password, null, false, null);
@@ -65,9 +71,11 @@ public class MindsDB {
 
     /**
      * Create a connection to MindsDB server.
-     *
-     * @param url    URL to MindsDB server.
-     * @param apiKey API key to authenticate (for cloud version).
+     * @param url URL to MindsDB server.
+     * @param login     User login, for cloud version it contains email.
+     * @param password User password to login (for cloud version).
+     * @param apiKey    API key to authenticate (for cloud version).
+     * @return      Server object.
      */
     public static Server connect(String url, String login, String password, String apiKey) {
         return connect(url, login, password, apiKey, false, null);

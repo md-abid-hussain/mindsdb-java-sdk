@@ -8,9 +8,38 @@ import mindsdb.connectors.RestAPI;
 import mindsdb.models.Database;
 import tech.tablesaw.api.Table;
 
+/**
+ * The Databases class provides methods to list, create, and drop databases.
+ * 
+ * <p>
+ * Example usage:
+ * 
+ * <pre>
+ * {@code
+ * // List all databases
+ * databases.list();
+ * 
+ * // Get database by name
+ * Database db = databases.get("example_db");
+ * 
+ * // Create a new database
+ * Database db = databases.create("example_db", "postgres", Map.of("host", ""));
+ * 
+ * // Drop a database
+ * databases.drop("example_db");
+ * 
+ * // Get an existing database
+ * Database db = databases.get("example_db");
+ * }
+ * </pre>
+ */
 public class Databases {
     private final RestAPI api;
 
+    /**
+     * Create a new Databases object
+     * @param api - RestAPI object
+     */
     public Databases(RestAPI api) {
         this.api = api;
     }
