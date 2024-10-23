@@ -5,6 +5,40 @@ import com.google.gson.JsonObject;
 
 import lombok.Getter;
 
+/**
+ * The {@code Handler} class represents a handler with various attributes such
+ * as name, title, version, description,
+ * connection arguments, import success flag, and import error message. It
+ * provides a constructor to initialize these
+ * attributes from a JSON object with case-insensitive keys. The class also
+ * includes methods to return string
+ * representations of the handler.
+ * 
+ * <p>
+ * Attributes:
+ * </p>
+ * <ul>
+ * <li>{@code name}: The name of the handler (String)</li>
+ * <li>{@code title}: The title of the handler (String)</li>
+ * <li>{@code version}: The version of the handler (String)</li>
+ * <li>{@code description}: The description of the handler (String)</li>
+ * <li>{@code connectionArgs}: The connection arguments (JsonObject)</li>
+ * <li>{@code importSuccess}: The import success flag (Boolean)</li>
+ * <li>{@code importError}: The import error message (String)</li>
+ * </ul>
+ * 
+ * <p>
+ * Methods:
+ * </p>
+ * <ul>
+ * <li>{@code Handler(JsonObject kwargs)}: Constructs a new Handler instance
+ * with the provided JSON object.</li>
+ * <li>{@code toString()}: Returns a string representation of the Handler
+ * instance.</li>
+ * <li>{@code describe()}: Returns a detailed string representation of the
+ * Handler instance.</li>
+ * </ul>
+ */
 @Getter
 public class Handler {
     private String name;
@@ -15,7 +49,23 @@ public class Handler {
     private boolean importSuccess;
     private String importError;
 
-    // Constructor to handle dynamic parameters
+    /**
+     * Constructs a new Handler instance with the provided JSON object.
+     * The constructor normalizes the keys of the provided JSON object to lower case
+     * and initializes the Handler's fields based on the normalized keys.
+     *
+     * @param kwargs A JsonObject containing the initialization parameters.
+     *               Expected keys (case-insensitive) are:
+     *               <ul>
+     *               <li>name: The name of the handler (String)</li>
+     *               <li>title: The title of the handler (String)</li>
+     *               <li>version: The version of the handler (String)</li>
+     *               <li>description: The description of the handler (String)</li>
+     *               <li>connection_args: The connection arguments (JsonObject)</li>
+     *               <li>import_success: The import success flag (Boolean)</li>
+     *               <li>import_error: The import error message (String)</li>
+     *               </ul>
+     */
     public Handler(JsonObject kwargs) {
         JsonObject normalizedKwargs = new JsonObject();
 
@@ -86,6 +136,11 @@ public class Handler {
         return String.format("%s(%s)", getClass().getSimpleName(), this.name);
     }
 
+    /**
+     * Returns a string representation of the Handler instance.
+     * 
+     * @return A string representation of the Handler instance.
+     */
     public String describe() {
         return String.format(
                 "%s(name=%s, title=%s, version=%s, description=%s, connectionArgs=%s, importSuccess=%s, importError=%s)",

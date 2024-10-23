@@ -64,15 +64,16 @@ public class Skills {
 
     public Skill create(String name, String type, Map<String, Object> params) {
         JsonObject jsonParams = new Gson().toJsonTree(params).getAsJsonObject();
+
         return create(name, type, jsonParams);
     }
 
     public Skill update(String name, Skill updateSkill) {
         JsonObject params = new JsonObject();
-        for (Map.Entry<String, Object> entry : updateSkill.params.entrySet()) {
+        for (Map.Entry<String, Object> entry : updateSkill.getParams().entrySet()) {
             params.add(entry.getKey(), new Gson().toJsonTree(entry.getValue()));
         }
-        api.updateSkill(this.project.getName(), name, updateSkill.name, updateSkill.type, params);
+        api.updateSkill(this.project.getName(), name, updateSkill.getName(), updateSkill.getType(), params);
         return updateSkill;
     }
 

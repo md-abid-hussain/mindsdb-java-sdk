@@ -10,52 +10,98 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import lombok.Getter;
+import lombok.Setter;
 import mindsdb.models.skill.Skill;
 import mindsdb.services.Agents;
 
 /**
- * The Agent class represents an agent with various attributes such as name,
- * model name, skills, creation and update timestamps, provider, and additional
- * parameters.
- * It provides constructors for creating an agent instance and methods for
- * converting JSON data to an Agent object and generating completions for a list
- * of messages.
- * 
- * Attributes:
- * - name: The name of the agent.
- * - modelName: The name of the model associated with the agent.
- * - skills: A list of skills the agent possesses.
- * - createdAt: The timestamp when the agent was created.
- * - updatedAt: The timestamp when the agent was last updated.
- * - provider: The provider of the agent.
- * - params: Additional parameters for the agent in JSON format.
- * - agents: The Agents instance associated with this agent.
- * 
- * Methods:
- * - Agent(String name, String modelName, List<Skill> skills, JsonObject params,
- * LocalDateTime createdAt, LocalDateTime updatedAt, String provider, Agents
- * agents):
- * Constructs a new Agent instance with the specified attributes.
- * - Agent(String name, String modelName, List<Skill> skills, JsonObject params,
- * LocalDateTime createdAt, LocalDateTime updatedAt):
- * Constructs a new Agent instance with the specified attributes, without
- * provider and agents.
- * - String toString(): Returns a string representation of the agent.
- * - static Agent fromJson(JsonObject data, Agents agents): Converts JSON data
- * to an Agent object.
- * - AgentCompletion completion(List<Map<String, String>> messages): Generates a
- * completion for the given list of messages.
+ * Represents a MindsDB agent.
+ *
+ * Working with agents:
+ *
+ * Get an agent by name:
+ *
+ * <pre>
+ * {@code
+ * Agent agent = agents.get("my_agent");
+ * }
+ * </pre>
+ *
+ * Query an agent:
+ *
+ * <pre>
+ * {@code
+ * AgentCompletion completion = agent.completion(List.of(Map.of("question", "What is your name?", "answer", null)));
+ * System.out.println(completion.getContent());
+ * }
+ * </pre>
+ *
+ * Query an agent with streaming:
+ *
+ * <pre>
+ * {@code
+ * AgentCompletion completion = agent
+ *         .completionStream(List.of(Map.of("question", "What is your name?", "answer", null)));
+ * for (CompletionChunk chunk : completion) {
+ *     System.out.println(chunk.getChoices().get(0).getDelta().getContent());
+ * }
+ * }
+ * </pre>
+ *
+ * List all agents:
+ *
+ * <pre>
+ * {@code
+ * List<Agent> agents = agents.list();
+ * }
+ * </pre>
+ *
+ * Create a new agent:
+ *
+ * <pre>
+ * {@code
+ * Model model = models.get("my_model"); // Or use models.create(...)
+ * // Connect your agent to a MindsDB table.
+ * Skill textToSqlSkill = skills.create("text_to_sql", "sql",
+ *         Map.of("tables", List.of("my_table"), "database", "my_database"));
+ * Agent agent = agents.create("my_agent", model, List.of(textToSqlSkill));
+ * }
+ * </pre>
+ *
+ * Update an agent:
+ *
+ * <pre>
+ * {@code
+ * Model newModel = models.get("new_model");
+ * agent.setModelName(newModel.getName());
+ * Skill newSkill = skills.create("new_skill", "sql",
+ *         Map.of("tables", List.of("new_table"), "database", "new_database"));
+ * agent.getSkills().add(newSkill);
+ * Agent updatedAgent = agents.update("my_agent", agent);
+ * }
+ * </pre>
+ *
+ * Delete an agent by name:
+ *
+ * <pre>
+ * {@code
+ * agents.drop("my_agent");
+ * }
+ * </pre>
  */
+@Getter
+@Setter
 public class Agent {
 
-    public String name;
-    public String modelName;
-    public List<Skill> skills;
-    public LocalDateTime createdAt;
-    public LocalDateTime updatedAt;
-    public String provider;
-    public JsonObject params;
-    public Agents agents;
+    private String name;
+    private String modelName;
+    private List<Skill> skills;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String provider;
+    private JsonObject params;
+    private Agents agents;
 
     /**
      * Constructs a new Agent instance.

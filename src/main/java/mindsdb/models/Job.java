@@ -35,6 +35,8 @@ import tech.tablesaw.api.Table;
  * specified attributes.
  * - Job(Project project, String name, CreateJobCallback createCallback):
  * Constructs a new Job instance with the specified attributes, without data.
+ * - Job(Project project, String name): Constructs a new Job instance with the
+ * specified attributes, without data and create callback.
  * - String toString(): Returns a string representation of the job.
  * - void exit(): Exits the job.
  * - void close(): Closes the job.
@@ -86,6 +88,10 @@ public class Job implements AutoCloseable {
      */
     public Job(Project project, String name, CreateJobCallback createCallback) {
         this(project, name, null, createCallback);
+    }
+
+    public Job(Project project, String name) {
+        this(project, name, null);
     }
 
     /**

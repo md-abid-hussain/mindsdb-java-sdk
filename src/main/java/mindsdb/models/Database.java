@@ -9,17 +9,45 @@ import mindsdb.services.Query;
 import mindsdb.services.Tables;
 
 /**
+ * The Database class represents a database in the MindsDB system.
+ * It provides methods to interact with the database, such as querying,
+ * listing tables, getting a specific table, dropping a table, and creating
+ * tables.
  * 
- * Allows to work with database (datasource): to use tables and make raw queries
+ * <p>
+ * The Database class can be instantiated using different constructors depending
+ * on
+ * the available information (e.g., with a Project object or a RestAPI object).
+ * </p>
  * 
- * To run native query
- * At this moment query is just saved in Qeury object and not executed
- * Query query = database.query("SELECT * FROM table");
+ * <p>
+ * Example usage:
  * 
- * This command sends request to server to execute query and return Tablesaw
- * Table
- * Table table = query.fetch();
- * Has list of tables in .tables attribute.
+ * <pre>
+ * {@code
+ * Server server = MindsDB.connect();
+ * Database db = server.getDatabase("my_database");
+ * Query query = db.query("SELECT * FROM my_table");
+ * List<MDBTable> tables = db.listTables();
+ * MDBTable table = db.getTable("my_table");
+ * db.dropTable("my_table");
+ * MDBTable newTable = db.createTable("new_table", someDataFrame, true);
+ * }
+ * </pre>
+ * </p>
+ * 
+ * <p>
+ * The class also overrides the {@code toString} method to provide a string
+ * representation
+ * of the Database object.
+ * </p>
+ * 
+ * @see Server
+ * @see Project
+ * @see RestAPI
+ * @see Tables
+ * @see Query
+ * @see MDBTable
  */
 @Getter
 @Setter
@@ -30,6 +58,13 @@ public class Database {
     private Tables tables;
     private Project project;
 
+    /**
+     * Create a new Database object
+     * 
+     * @param project - Project object
+     * @param name    - Name of the database
+     * @param engine  - Engine of the database
+     */
     public Database(Project project, String name, String engine) {
         this.name = name;
         this.engine = engine;
@@ -38,12 +73,28 @@ public class Database {
         this.project = project;
     }
 
+    /**
+     * Create a new Database object
+     * 
+     * @param project - Project object
+     * @param name    - Name of the database
+     */
+    public Database(Project project, String name) {
+        this(project, name, null);
+    }
+
+    /**
+     * Create a new Database object
+     * 
+     * @param api    - RestAPI object
+     * @param name   - Name of the database
+     * @param engine - Engine of the database
+     */
     public Database(RestAPI api, String name, String engine) {
         this.name = name;
         this.engine = engine;
         this.api = api;
         this.tables = new Tables(this, api);
-
     }
 
     /**
@@ -66,7 +117,7 @@ public class Database {
      * 
      * @return List of Table objects
      */
-    public List<Table> listTables() {
+    public List<MDBTable> listTables() {
         return tables.list();
     }
 
@@ -76,7 +127,7 @@ public class Database {
      * @param tableName - name of table
      * @return Table object
      */
-    public Table getTable(String tableName) {
+    public MDBTable getTable(String tableName) {
         return tables.get(tableName);
     }
 
@@ -97,7 +148,7 @@ public class Database {
      * @param replace - Replace the table if it already exists
      * @return Table
      */
-    public Table createTable(String name, tech.tablesaw.api.Table df, boolean replace) {
+    public MDBTable createTable(String name, tech.tablesaw.api.Table df, boolean replace) {
         return tables.create(name, df, replace);
     }
 
@@ -109,7 +160,7 @@ public class Database {
      * @param replace - Replace the table if it already exists
      * @return Table
      */
-    public Table createTable(String name, Query query, boolean replace) {
+    public MDBTable createTable(String name, Query query, boolean replace) {
         return tables.create(name, query, replace);
     }
 

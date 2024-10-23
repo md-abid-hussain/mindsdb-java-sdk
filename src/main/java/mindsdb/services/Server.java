@@ -287,7 +287,7 @@ public class Server extends Project {
      * @param params Parameters of the skill
      * @return Skill
      */
-    public Skill createSkill(String name, String type, JsonObject params) {
+    public Skill createSkill(String name, String type, Map<String, Object> params) {
         return skills.create(name, type, params);
     }
 

@@ -135,8 +135,8 @@ public class Agents {
 
         KnowledgeBase kb;
 
-        if (agent.provider.equals("mindsdb")) {
-            Model agentModel = this.models.getModel(agent.modelName);
+        if (agent.getProvider().equals("mindsdb")) {
+            Model agentModel = this.models.getModel(agent.getModelName());
             Gson gson = new Gson();
             JsonElement jsonElement = gson
                     .toJsonTree(agentModel.getData().getOrDefault("training_options", new HashMap<String, Object>()));
@@ -153,7 +153,7 @@ public class Agents {
             Map<String, Object> apiKeyParams = new HashMap<>();
             for (Map.Entry<String, Object> entry : trainingOptionsUsing.entrySet()) {
                 if (entry.getKey().contains("api_key")) {
-                    apiKeyParams.put(entry.getKey(), entry.getValue());
+                    apiKeyParams.put(entry.getKey(), (String) entry.getValue());
                 }
             }
             kb = this.knowledgeBases.create(name, null, null, null, null, null, apiKeyParams);
@@ -287,8 +287,8 @@ public class Agents {
                 "source", kb.getName(),
                 "description", description);
         Skill fileRetrievalSkill = this.skills.create(skillName, "retrieval", retrievalParams);
-        agent.skills.add(fileRetrievalSkill);
-        this.update(agent.name, agent);
+        agent.getSkills().add(fileRetrievalSkill);
+        this.update(agent.getName(), agent);
     }
 
     /**
@@ -347,8 +347,8 @@ public class Agents {
                 "description", description);
 
         Skill webRetrievalSkill = this.skills.create(skillName, "retrieval", retrievalParams);
-        agent.skills.add(webRetrievalSkill);
-        this.update(agent.name, agent);
+        agent.getSkills().add(webRetrievalSkill);
+        this.update(agent.getName(), agent);
 
     }
 
@@ -386,16 +386,16 @@ public class Agents {
 
         Skill databaseSqlSkill = this.skills.create(skillName, "sql", sqlParams);
         Agent agent = this.get(name);
-        if (agent.params == null) {
-            agent.params = new JsonObject();
+        if (agent.getParams() == null) {
+            agent.setParams(new JsonObject());
         }
 
-        if (!agent.params.has("prompt_template")) {
-            agent.params.addProperty("prompt_template", "using mindsdb sqltoolbox");
+        if (!agent.getParams().has("prompt_template")) {
+            agent.getParams().addProperty("prompt_template", "using mindsdb sqltoolbox");
         }
 
-        agent.skills.add(databaseSqlSkill);
-        this.update(agent.name, agent);
+        agent.getSkills().add(databaseSqlSkill);
+        this.update(agent.getName(), agent);
     }
 
     /**
@@ -418,7 +418,12 @@ public class Agents {
             }
         }
 
-        Map<String, Object> agentParams = new HashMap<>(params);
+        Map<String, Object> agentParams;
+        if (params != null) {
+            agentParams = new HashMap<>(params);
+        } else {
+            agentParams = new HashMap<>();
+        }
         if (!agentParams.containsKey("prompt_template")) {
             agentParams.put("prompt_template", DEFAULT_LLM_PROMPT);
         }
@@ -443,17 +448,17 @@ public class Agents {
     public void update(String name, Agent updatedAgent) {
         Set<String> updatedSkills = new HashSet<>();
 
-        for (Skill skill : updatedAgent.skills) {
+        for (Skill skill : updatedAgent.getSkills()) {
             try {
-                this.skills.get(skill.name);
-                updatedSkills.add(skill.name);
+                this.skills.get(skill.getName());
+                updatedSkills.add(skill.getName());
             } catch (HttpException e) {
                 if (e.getStatusCode() != 404) {
                     throw e;
 
                 } else {
-                    this.skills.create(skill.name, skill.type, skill.params);
-                    updatedSkills.add(skill.name);
+                    this.skills.create(skill.getName(), skill.getType(), skill.getParams());
+                    updatedSkills.add(skill.getName());
                 }
             }
         }
@@ -469,9 +474,9 @@ public class Agents {
         Set<String> skillsToRemove = new HashSet<>(existingSkills);
         skillsToRemove.removeAll(updatedSkills);
 
-        this.api.updateAgent(this.project.getName(), name, updatedAgent.name, updatedAgent.modelName,
+        this.api.updateAgent(this.project.getName(), name, updatedAgent.getName(), updatedAgent.getModelName(),
                 skillsToAdd.stream().collect(Collectors.toList()), skillsToRemove.stream().collect(Collectors.toList()),
-                updatedAgent.params);
+                updatedAgent.getParams());
     }
 
     /**

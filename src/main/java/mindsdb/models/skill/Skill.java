@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import lombok.Getter;
+
 /**
  * The Skill class represents a skill with a name, type, and parameters.
  * It provides constructors for creating a skill instance and methods for
@@ -26,10 +28,11 @@ import com.google.gson.JsonObject;
  * - static Skill fromJson(JsonObject json): Converts JSON data to a Skill
  * object.
  */
+@Getter
 public class Skill {
-    public final String name;
-    public final String type;
-    public final Map<String, Object> params;
+    private final String name;
+    private final String type;
+    private final Map<String, Object> params;
 
     public Skill(String name, String type, Map<String, Object> params) {
         this.name = name;

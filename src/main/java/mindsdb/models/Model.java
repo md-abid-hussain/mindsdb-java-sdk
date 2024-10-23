@@ -19,12 +19,12 @@ public class Model {
 
     public Model(Project project, Map<String, Object> data) {
         this.project = project;
-        this.name = data.get("name").toString();
+        this.name = data.get("name") != null ? data.get("name").toString() : null;
         this.version = data.get("version") != null ? Integer.valueOf(data.get("version").toString()) : null;
         this.data = data;
     }
 
-    private String getIdentifier() {
+    public String getIdentifier() {
         String identifier = project.getName() + "." + name;
 
         if (version != null) {
@@ -37,7 +37,8 @@ public class Model {
     @Override
     public String toString() {
 
-        String versionStr = (version != null) ? ", version=" + version : data.get("version").toString();
+        String versionStr = (version != null) ? ", version=" + version
+                : (data.get("version") != null ? data.get("version").toString() : "null");
         return String.format("%s(%s%s, status=%s)", getClass().getSimpleName(), name, versionStr,
                 data.get("status"));
     }
@@ -117,7 +118,9 @@ public class Model {
 
     private Map<String, Object> refresh() {
         Model model = version != null ? project.getModelWithVersion(name, version) : project.getModel(name);
-        this.data = model.data;
+        if (model != null) {
+            this.data = model.data;
+        }
         return this.data;
     }
 
