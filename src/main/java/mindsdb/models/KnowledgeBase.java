@@ -8,24 +8,25 @@ import java.util.Map;
 import kong.unirest.core.UnirestException;
 import kong.unirest.core.json.JSONException;
 import kong.unirest.core.json.JSONObject;
+import lombok.Getter;
 import mindsdb.connectors.RestAPI;
 import mindsdb.services.Query;
 import tech.tablesaw.api.Row;
 
+@Getter
 public class KnowledgeBase extends Query implements Cloneable {
-    public RestAPI api;
-    public Project project;
-    public String name;
-    public String tableName;
-    public Table storage;
-    public Model model;
-    public Map<String, Object> params;
-    public List<String> metadataColumns;
-    public List<String> contentColumns;
-    public String idColumn;
-    public String query;
-    public Integer limit;
-    public String sql;
+    private RestAPI api;
+    private Project project;
+    private String name;
+    private String tableName;
+    private Table storage;
+    private Model model;
+    private Map<String, Object> params;
+    private List<String> metadataColumns;
+    private List<String> contentColumns;
+    private final String idColumn;
+    private String query;
+    private Integer limit;
 
     public KnowledgeBase(RestAPI api, Project project, Map<String, Object> data) {
         super(api, null);
@@ -98,8 +99,6 @@ public class KnowledgeBase extends Query implements Cloneable {
         this.query = null;
         this.limit = null;
         updateQuery();
-
-        super.sql = this.sql;
     }
 
     @Override
@@ -107,12 +106,29 @@ public class KnowledgeBase extends Query implements Cloneable {
         return String.format("%s(%s.%s)", this.getClass().getSimpleName(), this.project.getName(), this.name);
     }
 
+    /**
+     * Find data in the knowledge base
+     * 
+     * @param query - query string
+     * @param limit - limit the number of results
+     * @return KnowledgeBase object
+     */
     public KnowledgeBase find(String query, Integer limit) {
-        KnowledgeBase kb = this.clone();
-        kb.query = query;
-        kb.limit = limit;
-        kb.updateQuery();
-        return kb;
+        KnowledgeBase kb;
+        try {
+            kb = this.clone();
+            kb.query = query;
+            kb.limit = limit;
+            kb.updateQuery();
+
+            return kb;
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException("Clone not supported", e);
+        }
+    }
+
+    public KnowledgeBase find(String query) {
+        return find(query, 1);
     }
 
     private void updateQuery() {
@@ -126,7 +142,7 @@ public class KnowledgeBase extends Query implements Cloneable {
         }
 
         astQuery.append(";");
-        this.sql = astQuery.toString();
+        this.setSql(astQuery.toString());
     }
 
     public void insertFiles(List<String> filePaths) {
@@ -137,6 +153,13 @@ public class KnowledgeBase extends Query implements Cloneable {
         }
     }
 
+    /**
+     * Insert webpages into the knowledge base
+     * 
+     * @param urls       - list of URLs to insert
+     * @param crawlDepth - depth of the crawl
+     * @param filters    - list of filters
+     */
     public void insertWebpages(List<String> urls, int crawlDepth, List<String> filters) {
         try {
             this.api.insertWebpagesIntoKnowledgeBase(this.project.getName(), this.name, urls, crawlDepth, filters);
@@ -145,12 +168,26 @@ public class KnowledgeBase extends Query implements Cloneable {
         }
     }
 
+    /**
+     * Insert data into the knowledge base using a Table object
+     * 
+     * @param data - Table object containing the data to insert
+     */
     public void insert(tech.tablesaw.api.Table data) {
         StringBuilder valueString = new StringBuilder();
         for (Row row : data) {
             valueString.append("(");
             for (int i = 0; i < row.columnCount(); i++) {
-                valueString.append(row.getObject(i));
+                Object cellValue = row.getObject(i);
+                if (cellValue instanceof String rowData) {
+                    // Escape single quotes
+                    rowData = rowData.replace("'", "\\\\'");
+                    // Escape double quotes
+                    rowData = rowData.replace("\"", "\\\"");
+                    valueString.append("'").append(rowData).append("'");
+                } else {
+                    valueString.append(cellValue);
+                }
                 if (i < row.columnCount() - 1) {
                     valueString.append(", ");
                 }
@@ -158,31 +195,46 @@ public class KnowledgeBase extends Query implements Cloneable {
             valueString.append("), ");
         }
 
+        // Remove the trailing comma and space
+        valueString.delete(valueString.length() - 2, valueString.length());
+
         StringBuilder columnNames = new StringBuilder();
         for (String column : data.columnNames()) {
             columnNames.append(column);
             columnNames.append(", ");
         }
 
-        String astQuery = String.format("INSERT INTO %s (%s) VALUES %s;", this.tableName, columnNames.toString(),
+        // Remove the trailing comma and space
+        columnNames.delete(columnNames.length() - 2, columnNames.length());
+
+        String sqlQuery = String.format("INSERT INTO %s (%s) VALUES %s;", this.tableName, columnNames.toString(),
                 valueString.toString());
 
-        this.api.sqlQuery(astQuery, this.database);
+        this.api.sqlQuery(sqlQuery, this.project.getName());
     }
 
+    /**
+     * Insert data into the knowledge base using a Query object
+     * 
+     * @param data Query object containing the data to insert
+     */
     public void insert(Query data) {
-
         String astQuery;
-        if (data.database != null) {
-            astQuery = String.format("INSERT INTO %s SELECT * FROM %s (%s) ;", this.tableName, data.database, data.sql);
+        if (data.getDatabase() != null) {
+            astQuery = String.format("INSERT INTO %s SELECT * FROM %s (%s) ;", this.tableName, data.getDatabase(),
+                    data.getSql());
         } else {
-            astQuery = String.format("INSERT INTO %s (%s)", this.tableName, data.sql);
+            astQuery = String.format("INSERT INTO %s (%s)", this.tableName, data.getSql());
         }
 
-        this.api.sqlQuery(astQuery, this.database);
-
+        this.api.sqlQuery(astQuery, data.getDatabase());
     }
 
+    /**
+     * Insert data into the knowledge base using a map
+     * 
+     * @param data Map containing the data to insert
+     */
     public void insert(Map<String, String> data) {
         tech.tablesaw.api.Table table = tech.tablesaw.api.Table.create("data");
         for (Map.Entry<String, String> entry : data.entrySet()) {
@@ -193,7 +245,7 @@ public class KnowledgeBase extends Query implements Cloneable {
     }
 
     @Override
-    protected KnowledgeBase clone() {
+    protected KnowledgeBase clone() throws CloneNotSupportedException {
         try {
             KnowledgeBase cloned = (KnowledgeBase) super.clone();
 
@@ -209,7 +261,7 @@ public class KnowledgeBase extends Query implements Cloneable {
 
             // Handle deep copy for model if necessary
             if (this.model != null) {
-                cloned.model = new Model(this.project, Map.of("name", this.model.name));
+                cloned.model = new Model(this.project, Map.of("name", this.model.getName()));
             }
 
             return cloned;
