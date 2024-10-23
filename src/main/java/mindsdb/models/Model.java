@@ -5,12 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Model {
 
-    public Project project;
-    public Map<String, Object> data;
-    public String name;
-    public Integer version;
+    private Project project;
+    private Map<String, Object> data;
+    private String name;
+    private Integer version;
 
     public Model(Project project, Map<String, Object> data) {
         this.project = project;
@@ -45,7 +50,7 @@ public class Model {
      * @return prediction result in Tablesaw Table
      */
     public tech.tablesaw.api.Table predict(tech.tablesaw.api.Table data, Map<String, String> params) {
-        return project.api.modelPredict(project.getName(), name, data, params, version);
+        return project.getApi().modelPredict(project.getName(), name, data, params, version);
     }
 
     /**
@@ -55,7 +60,7 @@ public class Model {
      * @return prediction result in Tablesaw Table
      */
     public tech.tablesaw.api.Table predict(tech.tablesaw.api.Table data) {
-        return project.api.modelPredict(project.getName(), name, data, null,
+        return project.getApi().modelPredict(project.getName(), name, data, null,
                 version);
     }
 
@@ -67,7 +72,7 @@ public class Model {
      * @return prediction result in Tablesaw Table
      */
     public tech.tablesaw.api.Table predict(Map<String, String> data, Map<String, String> params) {
-        return project.api.modelPredict(project.getName(), name, data, params, version);
+        return project.getApi().modelPredict(project.getName(), name, data, params, version);
     }
 
     /**
@@ -77,7 +82,7 @@ public class Model {
      * @return prediction result in Tablesaw Table
      */
     public tech.tablesaw.api.Table predict(Map<String, String> data) {
-        return project.api.modelPredict(project.getName(), name, data, null,
+        return project.getApi().modelPredict(project.getName(), name, data, null,
                 version);
     }
 
@@ -130,7 +135,7 @@ public class Model {
         }
         String astQuery = String.format("DESCRIBE %s;", identifier);
 
-        return project.api.sqlQuery(astQuery);
+        return project.getApi().sqlQuery(astQuery);
     }
 
     public tech.tablesaw.api.Table describe() {
@@ -154,7 +159,7 @@ public class Model {
      */
     public ModelVersion getVersion(Integer num) {
         return project.listModelsWithVersion(name, num).stream()
-                .filter(m -> Integer.valueOf(m.version.toString()).equals(num))
+                .filter(m -> Integer.valueOf(m.getVersion().toString()).equals(num))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Version not found"));
     }
@@ -175,7 +180,7 @@ public class Model {
      */
     public void setActive(int version) {
         String sql = String.format("SET active = %s.%d", name, version);
-        project.api.sqlQuery(sql);
+        project.getApi().sqlQuery(sql);
         refresh();
     }
 
@@ -215,7 +220,7 @@ public class Model {
         }
 
         String sql = createAstQuery(operation, query, database, options);
-        tech.tablesaw.api.Table modelData = project.api.sqlQuery(sql);
+        tech.tablesaw.api.Table modelData = project.getApi().sqlQuery(sql);
 
         Map<String, Object> dataMap = new HashMap<>();
         for (String columnName : modelData.columnNames()) {
