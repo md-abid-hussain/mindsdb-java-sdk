@@ -3,26 +3,30 @@ package mindsdb.models;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.Getter;
 import mindsdb.connectors.RestAPI;
+import mindsdb.services.Databases;
 import mindsdb.services.Jobs;
 import mindsdb.services.KnowledgeBases;
+import mindsdb.services.MLEngines;
 import mindsdb.services.Models;
 import mindsdb.services.Query;
-import mindsdb.services.Server;
 import mindsdb.services.Skills;
 import mindsdb.services.Views;
 
+@Getter
 public class Project {
-    private final String name;
+    public final String name;
     public final RestAPI api;
     public final Jobs jobs;
     public final Views views;
     public final Models models;
     public final KnowledgeBases knowledgeBases;
     public final Skills skills;
-    public final Server server;
+    public final Databases databases;
+    public final MLEngines mlEngines;
 
-    public Project(Server server, RestAPI api, String name) {
+    public Project(RestAPI api, String name) {
         this.name = name;
         this.api = api;
         this.jobs = new Jobs(this, api);
@@ -30,7 +34,8 @@ public class Project {
         this.models = new Models(this, api);
         this.knowledgeBases = new KnowledgeBases(this, api);
         this.skills = new Skills(this, api);
-        this.server = server;
+        this.databases = new Databases(api);
+        this.mlEngines = new MLEngines(api);
     }
 
     /**
@@ -297,6 +302,26 @@ public class Project {
      */
     public Model getModel(String name) {
         return models.getModel(name);
+    }
+
+    // Knowledgebases
+    /**
+     * List all knowledge bases
+     * 
+     * @return list of KnowledgeBase objects
+     */
+    public List<KnowledgeBase> listKnowledgeBases() {
+        return knowledgeBases.list();
+    }
+
+    /**
+     * Get a knowledge base by name
+     * 
+     * @param name name of the knowledge base
+     * @return KnowledgeBase object
+     */
+    public KnowledgeBase getKnowledgeBase(String name) {
+        return knowledgeBases.get(name);
     }
 
 }
