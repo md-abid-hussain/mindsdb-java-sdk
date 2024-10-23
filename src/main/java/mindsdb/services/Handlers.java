@@ -3,7 +3,8 @@ package mindsdb.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import kong.unirest.core.json.JSONObject;
+import com.google.gson.JsonObject;
+
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Handler;
 import tech.tablesaw.api.Table;
@@ -21,9 +22,9 @@ public class Handlers {
         Table response = api.sqlQuery(String.format("SHOW HANDLERS WHERE TYPE='%s';", type));
 
         return response.stream().map(row -> {
-            JSONObject args = new JSONObject();
+            JsonObject args = new JsonObject();
             for (int i = 0; i < row.columnCount(); i++) {
-                args.put(row.columnNames().get(i), row.getString(i));
+                args.addProperty(row.columnNames().get(i), row.getString(i));
             }
             return new Handler(args);
         }).collect(Collectors.toList());
