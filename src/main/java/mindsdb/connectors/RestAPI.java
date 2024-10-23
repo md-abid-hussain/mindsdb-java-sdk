@@ -234,6 +234,7 @@ public final class RestAPI {
         body.add("agent", agentDetails);
 
         HttpResponse<String> response = session.put(endpoint)
+                .header("Content-Type", "application/json")
                 .body(body.toString())
                 .asString();
         raiseForStatus(response);
