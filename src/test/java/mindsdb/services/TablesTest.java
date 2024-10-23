@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Database;
-import mindsdb.models.Table;
+import mindsdb.models.MDBTable;
 import tech.tablesaw.api.StringColumn;
 
 class TablesTest {
@@ -42,7 +42,7 @@ class TablesTest {
         response.addColumns(StringColumn.create("name", tableNames));
         when(database.query("SHOW TABLES").fetch()).thenReturn(response);
 
-        List<Table> result = tables.list();
+        List<MDBTable> result = tables.list();
 
         assertEquals(2, result.size());
         assertEquals("table1", result.get(0).name);
@@ -52,7 +52,7 @@ class TablesTest {
     @Test
     void get() {
         String tableName = "table1";
-        Table result = tables.get(tableName);
+        MDBTable result = tables.get(tableName);
 
         assertNotNull(result);
         assertEquals(tableName, result.name);
@@ -64,7 +64,7 @@ class TablesTest {
         Query query = new Query(api, "SELECT * FROM old_table", "database");
         when(api.sqlQuery(anyString())).thenReturn(mock(tech.tablesaw.api.Table.class));
 
-        Table result = tables.create(tableName, query, true);
+        MDBTable result = tables.create(tableName, query, true);
 
         assertNotNull(result);
         assertEquals(tableName, result.name);
@@ -75,10 +75,10 @@ class TablesTest {
     void testCreate() {
         String tableName = "new_table";
         tech.tablesaw.api.Table df = tech.tablesaw.api.Table.create("new_table");
-        Table mockTable = mock(Table.class);
+        MDBTable mockTable = mock(MDBTable.class);
         doNothing().when(api).uploadFile(anyString(), any(tech.tablesaw.api.Table.class));
         mockTable.name = tableName;
-        Table result = tables.create(tableName, df, true);
+        MDBTable result = tables.create(tableName, df, true);
 
         assertNotNull(result);
         assertEquals(mockTable.name, result.name);

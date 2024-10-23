@@ -51,12 +51,12 @@ public class DatabaseTest {
     @Test
     public void testListTables() {
 
-        List<mindsdb.models.Table> mockTableList = List.of(
-                new mindsdb.models.Table(database, "table1"),
-                new mindsdb.models.Table(database, "table2"));
+        List<mindsdb.models.MDBTable> mockTableList = List.of(
+                new mindsdb.models.MDBTable(database, "table1"),
+                new mindsdb.models.MDBTable(database, "table2"));
         when(tables.list()).thenReturn(mockTableList);
 
-        List<mindsdb.models.Table> tableList = database.listTables();
+        List<mindsdb.models.MDBTable> tableList = database.listTables();
 
         assertNotNull(tableList);
         assertEquals(2, tableList.size());
@@ -66,12 +66,12 @@ public class DatabaseTest {
 
     @Test
     public void testGetTable() {
-        mindsdb.models.Table mockTable = mock(mindsdb.models.Table.class);
+        mindsdb.models.MDBTable mockTable = mock(mindsdb.models.MDBTable.class);
         when(mockTable.getName()).thenReturn("table1");
 
         when(tables.get("table1")).thenReturn(mockTable);
 
-        mindsdb.models.Table table = database.getTable("table1");
+        mindsdb.models.MDBTable table = database.getTable("table1");
 
         assertNotNull(table);
         assertEquals("table1", table.getName());
@@ -86,12 +86,12 @@ public class DatabaseTest {
 
     @Test
     public void testCreateTableWithDataFrame() {
-        mindsdb.models.Table mockTable = mock(mindsdb.models.Table.class);
+        mindsdb.models.MDBTable mockTable = mock(mindsdb.models.MDBTable.class);
         when(mockTable.getName()).thenReturn("table1");
 
         when(tables.create(eq("table1"), any(Table.class), eq(true))).thenReturn(mockTable);
 
-        mindsdb.models.Table table = database.createTable("table1", Table.create("table1"), true);
+        mindsdb.models.MDBTable table = database.createTable("table1", Table.create("table1"), true);
 
         assertNotNull(table);
         assertEquals("table1", table.getName());
@@ -100,12 +100,12 @@ public class DatabaseTest {
     @Test
     public void testCreateTableWithQuery() {
         Query mockQuery = mock(Query.class);
-        mindsdb.models.Table mockTable = mock(mindsdb.models.Table.class);
+        mindsdb.models.MDBTable mockTable = mock(mindsdb.models.MDBTable.class);
         when(mockTable.getName()).thenReturn("table1");
 
         when(tables.create(eq("table1"), eq(mockQuery), eq(true))).thenReturn(mockTable);
 
-        mindsdb.models.Table table = database.createTable("table1", mockQuery, true);
+        mindsdb.models.MDBTable table = database.createTable("table1", mockQuery, true);
 
         assertNotNull(table);
         assertEquals("table1", table.getName());
