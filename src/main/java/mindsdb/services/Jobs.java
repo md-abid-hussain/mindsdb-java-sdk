@@ -71,7 +71,7 @@ public class Jobs {
      */
     public Job get(String name) {
         return listJobs(name).stream()
-                .filter(job -> job.name.equals(name))
+                .filter(job -> job.getName().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Job doesn't exist"));
     }
