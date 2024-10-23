@@ -42,7 +42,7 @@ public class Databases {
      */
     public Database get(String name) {
         return listDatabases().stream()
-                .filter(database -> database.name.equals(name))
+                .filter(database -> database.getName().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Database doesn't exist"));
     }
