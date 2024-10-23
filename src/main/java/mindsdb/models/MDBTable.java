@@ -9,8 +9,39 @@ import lombok.Getter;
 import mindsdb.services.Query;
 import tech.tablesaw.api.Row;
 
+/**
+ * The MDBTable class represents a table in the MindsDB system.
+ * It extends the Query class and provides methods to interact with the table,
+ * such as filtering, limiting, tracking, inserting, deleting, and updating
+ * data.
+ * 
+ * <p>
+ * Example usage:
+ * 
+ * <pre>
+ * {@code
+ * Database db = server.getDatabase("my_database");
+ * MDBTable table = db.getTable("my_table");
+ * table.filter("column1=value1").limit(10).track("column2");
+ * table.insert(someQuery);
+ * table.insert(someDataFrame);
+ * table.delete("column1=value1");
+ * table.update(Map.of("column1", "new_value"), "column2=value2");
+ * }
+ * </pre>
+ * </p>
+ * 
+ * <p>
+ * The class also overrides the {@code toString} method to provide a string
+ * representation of the MDBTable object.
+ * </p>
+ * 
+ * @see Database
+ * @see Query
+ * @see tech.tablesaw.api.Table
+ */
 @Getter
-public class Table extends Query {
+public class MDBTable extends Query {
     public String name;
     public String tableName;
     public Database db;
@@ -18,7 +49,13 @@ public class Table extends Query {
     private Integer limit;
     private String trackColumn;
 
-    public Table(Database database, String name) {
+    /**
+     * Create a new Mindsdb Table object
+     * 
+     * @param database - Database object
+     * @param name     - Name of the table
+     */
+    public MDBTable(Database database, String name) {
         super(database.getApi(), "");
         this.name = name;
         this.db = database;
@@ -29,7 +66,13 @@ public class Table extends Query {
         this.updateQuery();
     }
 
-    public Table(Project project, String name) {
+    /**
+     * Create a new Mindsdb Table object
+     * 
+     * @param project - Project object
+     * @param name    - Name of the table
+     */
+    public MDBTable(Project project, String name) {
         super(project.getApi(), "");
         this.name = name;
         this.tableName = project.getName() + "." + name;
@@ -92,12 +135,12 @@ public class Table extends Query {
 
     /**
      * Filter the table by key-value pairs
-     * >>> table.filter("a=1", "b=2")
+     * >>> table.filter("a=1", "b=2") *
      * 
-     * @param filters
+     * @param filters - Key-value pairs to filter the table by
      * @return Table object with the filters set
      */
-    public Table filter(String... filters) {
+    public MDBTable filter(String... filters) {
         for (String param : filters) {
             if (param.split("=").length != 2) {
                 throw new IllegalArgumentException("Filter parameters should be in key=value format");
@@ -105,7 +148,7 @@ public class Table extends Query {
         }
 
         // Create a new Table object (deep copy) and copy the filters
-        Table queryTable = new Table(this.db, this.name);
+        MDBTable queryTable = new MDBTable(this.db, this.name);
         queryTable.filters = this.copyFilters(); // Copy existing filters
 
         for (String param : filters) {
@@ -121,11 +164,11 @@ public class Table extends Query {
     /**
      * Limit the number of rows returned by the query
      * 
-     * @param limit
+     * @param limit - Number of rows to limit the query to
      * @return Table object with the limit set
      */
-    public Table limit(Integer limit) {
-        Table queryTable = new Table(this.db, this.name);
+    public MDBTable limit(Integer limit) {
+        MDBTable queryTable = new MDBTable(this.db, this.name);
         queryTable.filters = this.copyFilters();
         queryTable.limit = limit;
         queryTable.updateQuery();
@@ -138,8 +181,8 @@ public class Table extends Query {
      * @param column
      * @return Table object with the track column set
      */
-    public Table track(String column) {
-        Table queryTable = new Table(this.db, this.name);
+    public MDBTable track(String column) {
+        MDBTable queryTable = new MDBTable(this.db, this.name);
         queryTable.filters = this.copyFilters();
         queryTable.limit = this.limit;
         queryTable.trackColumn = column;
@@ -260,32 +303,4 @@ public class Table extends Query {
 
         this.db.getApi().sqlQuery(updateQuery.toString());
     }
-
-    // /**
-    // * Update table from subquery
-    // *
-    // * @param subQuery a Query object representing the subquery
-    // * @param onColumns list of columns to map subselect to table ['a', 'b', ...]
-    // * @return a Query object representing the update operation
-    // */
-    // public void update(Query subQuery, List<String> onColumns) {
-    // if (subQuery == null) {
-    // throw new IllegalArgumentException("Subquery cannot be null.");
-    // }
-    // if (onColumns == null || onColumns.isEmpty()) {
-    // throw new IllegalArgumentException("On columns list cannot be null or
-    // empty.");
-    // }
-
-    // StringBuilder updateQuery = new StringBuilder("UPDATE ");
-    // updateQuery.append(this.tableName);
-    // updateQuery.append(" ON ");
-    // updateQuery.append(String.join(", ", onColumns));
-    // updateQuery.append(" FROM (");
-    // updateQuery.append(subQuery.sql);
-    // updateQuery.append(")");
-
-    // this.db.api.sqlQuery(updateQuery.toString());
-    // }
-
 }

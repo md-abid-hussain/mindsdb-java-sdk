@@ -5,7 +5,8 @@ import java.util.List;
 import lombok.Getter;
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Database;
-import mindsdb.models.Table;
+import mindsdb.models.MDBTable;
+import tech.tablesaw.api.Table;
 
 @Getter
 public class Tables {
@@ -18,7 +19,7 @@ public class Tables {
     }
 
     private List<String> listTables() {
-        tech.tablesaw.api.Table response = database.query("SHOW TABLES").fetch();
+        Table response = database.query("SHOW TABLES").fetch();
         String firstColumnName = response.columnNames().get(0);
 
         return response.column(firstColumnName).asList().stream()
@@ -32,9 +33,9 @@ public class Tables {
      * 
      * @return List of Table
      */
-    public List<Table> list() {
+    public List<MDBTable> list() {
         return listTables().stream()
-                .map(tableName -> new Table(this.database, tableName))
+                .map(tableName -> new MDBTable(this.database, tableName))
                 .toList();
     }
 
@@ -44,8 +45,8 @@ public class Tables {
      * @param tableName
      * @return Table
      */
-    public Table get(String tableName) {
-        return new Table(this.database, tableName);
+    public MDBTable get(String tableName) {
+        return new MDBTable(this.database, tableName);
     }
 
     /**
@@ -56,7 +57,7 @@ public class Tables {
      * @param replace Replace the table if it already exists
      * @return Table
      */
-    public Table create(String name, Query query, boolean replace) {
+    public MDBTable create(String name, Query query, boolean replace) {
         String tableName = this.database.getName() + "." + name;
         String astQuery;
         String replaceStr = "";
@@ -72,7 +73,7 @@ public class Tables {
         }
 
         this.api.sqlQuery(astQuery);
-        return new Table(this.database, name);
+        return new MDBTable(this.database, name);
     }
 
     /**
@@ -83,7 +84,7 @@ public class Tables {
      * @param replace Replace the table if it already exists
      * @return Table
      */
-    public Table create(String name, tech.tablesaw.api.Table df, Boolean replace) {
+    public MDBTable create(String name, tech.tablesaw.api.Table df, Boolean replace) {
         this.api.uploadFile(name, df);
 
         if (this.database.getName().equals("files")) {
@@ -91,7 +92,7 @@ public class Tables {
                 name = name.split("\\.")[0];
             }
 
-            return new Table(this.database, name);
+            return new MDBTable(this.database, name);
         }
 
         throw new IllegalArgumentException("Only files database is supported for now");

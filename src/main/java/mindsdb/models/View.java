@@ -1,6 +1,6 @@
 package mindsdb.models;
 
-public class View extends Table {
+public class View extends MDBTable {
     public Project project;
 
     public View(Project project, String name) {

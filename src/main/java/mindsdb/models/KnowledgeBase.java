@@ -1,3 +1,4 @@
+
 package mindsdb.models;
 
 import java.util.ArrayList;
@@ -13,13 +14,73 @@ import mindsdb.connectors.RestAPI;
 import mindsdb.services.Query;
 import tech.tablesaw.api.Row;
 
+/**
+ * The KnowledgeBase class represents a knowledge base within a MindsDB project.
+ * It extends the Query class and implements the Cloneable interface.
+ * 
+ * <p>
+ * This class provides methods to interact with the knowledge base, including
+ * finding data, inserting files, inserting webpages, and inserting data using
+ * various formats such as Table objects, Query objects, and maps.
+ * </p>
+ * 
+ * <p>
+ * The KnowledgeBase class also supports deep cloning of its instances.
+ * </p>
+ * 
+ * <p>
+ * Example usage:
+ * </p>
+ * 
+ * <pre>
+ * {@code
+ * // Get KnowledgeBase object
+ * KnowledgeBase kb = server.knowledgeBases.get("knowledge_base_name");
+ * 
+ * // Find data in the knowledge base
+ * KnowledgeBase result = kb.find("some query", 10);
+ * 
+ * // Insert files into the knowledge base
+ * List<String> filePaths = List.of("/path/to/file1.txt", "/path/to/file2.txt");
+ * kb.insertFiles(filePaths);
+ * 
+ * // Insert webpages into the knowledge base
+ * List<String> urls = List.of("http://example.com/page1", "http://example.com/page2");
+ * kb.insertWebpages(urls, 2, List.of("filter1", "filter2"));
+ * 
+ * // Insert data using a Table object
+ * tech.tablesaw.api.Table table = tech.tablesaw.api.Table.create("data");
+ * kb.insert(table);
+ * 
+ * // Insert data using a Query object
+ * Query query = new Query(api, "SELECT * FROM some_table");
+ * kb.insert(query);
+ * 
+ * // Insert data using a map
+ * Map<String, String> dataMap = new HashMap<>();
+ * dataMap.put("column1", "value1");
+ * dataMap.put("column2", "value2");
+ * kb.insert(dataMap);
+ * }
+ * </pre>
+ * 
+ * <p>
+ * Note: This class requires the Tablesaw library for handling table data and
+ * the Unirest library for making HTTP requests.
+ * </p>
+ * 
+ * @see mindsdb.services.Query
+ * @see mindsdb.connectors.RestAPI
+ * @see tech.tablesaw.api.Table
+ * @see kong.unirest.core.UnirestException
+ */
 @Getter
 public class KnowledgeBase extends Query implements Cloneable {
     private RestAPI api;
     private Project project;
     private String name;
     private String tableName;
-    private Table storage;
+    private MDBTable storage;
     private Model model;
     private Map<String, Object> params;
     private List<String> metadataColumns;
@@ -28,11 +89,18 @@ public class KnowledgeBase extends Query implements Cloneable {
     private String query;
     private Integer limit;
 
+    /**
+     * Create a new KnowledgeBase object
+     * 
+     * @param api     - RestAPI object
+     * @param project - Project object
+     * @param data    - Map containing knowledge base data
+     */
     public KnowledgeBase(RestAPI api, Project project, Map<String, Object> data) {
         super(api, null);
         this.api = api;
         this.project = project;
-        this.name = data.get("name").toString();
+        this.name = data.containsKey("name") ? data.get("name").toString() : null;
         this.tableName = String.format("%s.%s", project.getName(), name);
         this.storage = null;
 
@@ -42,7 +110,7 @@ public class KnowledgeBase extends Query implements Cloneable {
                 String databaseName = parts[0];
                 String table = parts[1];
                 Database db = new Database(project, databaseName, null);
-                this.storage = new Table(db, table);
+                this.storage = new MDBTable(db, table);
             }
         }
 
@@ -127,8 +195,14 @@ public class KnowledgeBase extends Query implements Cloneable {
         }
     }
 
+    /**
+     * Find data in the knowledge base
+     * 
+     * @param query - query string
+     * @return KnowledgeBase object
+     */
     public KnowledgeBase find(String query) {
-        return find(query, 1);
+        return find(query, 100);
     }
 
     private void updateQuery() {
@@ -145,6 +219,11 @@ public class KnowledgeBase extends Query implements Cloneable {
         this.setSql(astQuery.toString());
     }
 
+    /**
+     * Insert files into the knowledge base
+     * 
+     * @param filePaths - list of file paths to insert
+     */
     public void insertFiles(List<String> filePaths) {
         try {
             this.api.insertFilesIntoKnowledgeBase(this.project.getName(), this.name, filePaths);
@@ -256,7 +335,7 @@ public class KnowledgeBase extends Query implements Cloneable {
 
             // Handle deep copy for storage if necessary
             if (this.storage != null) {
-                cloned.storage = new Table(this.storage.db, this.storage.name);
+                cloned.storage = new MDBTable(this.storage.db, this.storage.name);
             }
 
             // Handle deep copy for model if necessary

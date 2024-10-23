@@ -59,7 +59,7 @@ public class KnowledgeBases {
     public KnowledgeBase create(
             String name,
             Model model,
-            mindsdb.models.Table storage,
+            mindsdb.models.MDBTable storage,
             List<String> metadataColumns,
             List<String> contentColumns,
             String idColumn,
