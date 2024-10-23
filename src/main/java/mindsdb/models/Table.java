@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import mindsdb.services.Query;
 import tech.tablesaw.api.Row;
 
+@Getter
 public class Table extends Query {
     public String name;
     public String tableName;
@@ -17,10 +19,10 @@ public class Table extends Query {
     private String trackColumn;
 
     public Table(Database database, String name) {
-        super(database.api, "");
+        super(database.getApi(), "");
         this.name = name;
         this.db = database;
-        this.tableName = database.name + "." + name;
+        this.tableName = database.getName() + "." + name;
         this.filters = new HashMap<>();
         this.limit = null;
         this.trackColumn = null;
@@ -28,7 +30,7 @@ public class Table extends Query {
     }
 
     public Table(Project project, String name) {
-        super(project.api, "");
+        super(project.getApi(), "");
         this.name = name;
         this.tableName = project.getName() + "." + name;
         this.updateQuery();
@@ -70,7 +72,7 @@ public class Table extends Query {
         }
 
         // Convert the StringBuilder to a string and assign it to the SQL query
-        this.sql = queryBuilder.toString();
+        this.setSql(queryBuilder.toString());
     }
 
     // Creates a copy of the filters to ensure immutability of the original table
@@ -152,13 +154,13 @@ public class Table extends Query {
      */
     public void insert(Query query) {
         String astQuery;
-        if (query.database != null) {
-            String fromQueryString = String.format("SELECT * FROM %s (%s)", query.database, query.sql);
+        if (query.getDatabase() != null) {
+            String fromQueryString = String.format("SELECT * FROM %s (%s)", query.getDatabase(), query.getSql());
             astQuery = String.format("INSERT INTO %s %s", this.tableName, fromQueryString);
         } else {
-            astQuery = String.format("INSERT INTO %s (%s)", this.tableName, query.sql);
+            astQuery = String.format("INSERT INTO %s (%s)", this.tableName, query.getSql());
         }
-        this.db.api.sqlQuery(astQuery);
+        this.db.getApi().sqlQuery(astQuery);
     }
 
     /**
@@ -199,7 +201,7 @@ public class Table extends Query {
             }
         }
 
-        this.db.api.sqlQuery(astQuery.toString());
+        this.db.getApi().sqlQuery(astQuery.toString());
     }
 
     /**
@@ -223,7 +225,7 @@ public class Table extends Query {
 
         deleteQuery.append(";");
 
-        this.db.api.sqlQuery(deleteQuery.toString());
+        this.db.getApi().sqlQuery(deleteQuery.toString());
     }
 
     /**
@@ -256,7 +258,7 @@ public class Table extends Query {
         String whereClause = String.join(" AND ", filters);
         updateQuery.append(whereClause);
 
-        this.db.api.sqlQuery(updateQuery.toString());
+        this.db.getApi().sqlQuery(updateQuery.toString());
     }
 
     // /**
