@@ -30,7 +30,8 @@ class TablesTest {
         api = mock(RestAPI.class);
         database = mock(Database.class);
         when(database.query(anyString())).thenReturn(mock(Query.class));
-        database.name = "files";
+        database.setName("files");
+        when(database.getName()).thenReturn("files");
         tables = new Tables(database, api);
     }
 

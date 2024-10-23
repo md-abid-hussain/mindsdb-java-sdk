@@ -18,14 +18,14 @@ public class Server extends Project {
     public final MLEngines mlEngines;
     public final MLHandlers mlHandlers;
     public final DataHandlers dataHandlers;
-    // public Agents agents;
+    public final Agents agents;
     public final Skills skills;
 
     public final Projects projects;
     // public final RestAPI api;
 
     public Server(RestAPI api) {
-        super(null, api, "mindsdb");
+        super(api, "mindsdb");
         // this.api = api;
         this.projects = new Projects(this, api);
         this.mlEngines = new MLEngines(api);
@@ -33,6 +33,7 @@ public class Server extends Project {
         this.dataHandlers = new DataHandlers(api);
         this.databases = new Databases(api);
         this.skills = new Skills(this, api);
+        this.agents = new Agents(this, api);
     }
 
     // Server status
@@ -42,13 +43,13 @@ public class Server extends Project {
      * @return JsonObject with the server status
      */
     public JsonObject status() {
-        return api.status();
+        return getApi().status();
     }
 
     // Server string representation
     @Override
     public String toString() {
-        return String.format("Server(%s)", api.getUrl());
+        return String.format("Server(%s)", getApi().getUrl());
     }
 
     /**
@@ -309,9 +310,4 @@ public class Server extends Project {
     public void dropSkill(String name) {
         skills.drop(name);
     }
-
-    public RestAPI getApi() {
-        return api;
-    }
-
 }

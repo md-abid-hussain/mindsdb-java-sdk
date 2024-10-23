@@ -43,7 +43,7 @@ public class Views {
     }
 
     public View create(String name, Query query) {
-        return create(name, query.sql);
+        return create(name, query.getSql());
     }
 
     // public View create(String name, Query query) {

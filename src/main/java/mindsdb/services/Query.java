@@ -1,13 +1,17 @@
 package mindsdb.services;
 
 import kong.unirest.core.UnirestException;
+import lombok.Getter;
+import lombok.Setter;
 import mindsdb.connectors.RestAPI;
 import tech.tablesaw.api.Table;
 
+@Getter
+@Setter
 public class Query {
     private final RestAPI api;
-    public String sql;
-    public final String database;
+    private String sql;
+    private final String database;
 
     public Query(RestAPI api, String sql, String database) {
         this.api = api;
@@ -20,6 +24,7 @@ public class Query {
     }
 
     public Table fetch() {
+        System.out.println(sql);
         try {
             // Sending the SQL query to the API
             return api.sqlQuery(sql, database);

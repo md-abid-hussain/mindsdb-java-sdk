@@ -45,8 +45,8 @@ public class ModelsTest {
 
         assertNotNull(modelList);
         assertEquals(2, modelList.size());
-        assertEquals("model1", modelList.get(0).name);
-        assertEquals("model2", modelList.get(1).name);
+        assertEquals("model1", modelList.get(0).getName());
+        assertEquals("model2", modelList.get(1).getName());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class ModelsTest {
 
         assertNotNull(modelList);
         assertEquals(1, modelList.size());
-        assertEquals("model1", modelList.get(0).name);
+        assertEquals("model1", modelList.get(0).getName());
     }
 
     @Test
@@ -82,8 +82,8 @@ public class ModelsTest {
 
         assertNotNull(modelVersionList);
         assertEquals(1, modelVersionList.size());
-        assertEquals("model1", modelVersionList.get(0).name);
-        assertEquals(1, modelVersionList.get(0).version);
+        assertEquals("model1", modelVersionList.get(0).getName());
+        assertEquals(1, modelVersionList.get(0).getVersion());
     }
 
     @Test
@@ -100,7 +100,7 @@ public class ModelsTest {
         Model model = models.getModel("model1");
 
         assertNotNull(model);
-        assertEquals("model1", model.name);
+        assertEquals("model1", model.getName());
     }
 
     @Test
@@ -117,8 +117,8 @@ public class ModelsTest {
         ModelVersion modelVersion = models.getModelWithVersion("model1", 1);
 
         assertNotNull(modelVersion);
-        assertEquals("model1", modelVersion.name);
-        assertEquals(1, modelVersion.version);
+        assertEquals("model1", modelVersion.getName());
+        assertEquals(1, modelVersion.getVersion());
     }
 
     @Test

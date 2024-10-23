@@ -123,8 +123,8 @@ public class JobsTest {
         List<Job> jobList = jobs.list();
 
         assertEquals(2, jobList.size());
-        assertEquals("job1", jobList.get(0).name);
-        assertEquals("job2", jobList.get(1).name);
+        assertEquals("job1", jobList.get(0).getName());
+        assertEquals("job2", jobList.get(1).getName());
     }
 
     @Test
@@ -139,7 +139,7 @@ public class JobsTest {
         Job job = jobs.get("job1");
 
         assertNotNull(job);
-        assertEquals("job1", job.name);
+        assertEquals("job1", job.getName());
     }
 
     @Test

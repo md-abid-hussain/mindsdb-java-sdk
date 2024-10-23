@@ -2,7 +2,10 @@ package mindsdb.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,8 +16,8 @@ import mindsdb.models.skill.SQLSkill;
 import mindsdb.models.skill.Skill;
 
 public class Skills {
-    private RestAPI api;
-    private Project project;
+    private final RestAPI api;
+    private final Project project;
 
     public Skills(Project project, RestAPI api) {
         this.api = api;
@@ -53,11 +56,23 @@ public class Skills {
             return new SQLSkill(name, tables, database, description);
         }
 
-        return new Skill(name, type, params);
+        Map<String, Object> paramsMap = new Gson().fromJson(params, new TypeToken<Map<String, Object>>() {
+        }.getType());
+
+        return new Skill(name, type, paramsMap);
+    }
+
+    public Skill create(String name, String type, Map<String, Object> params) {
+        JsonObject jsonParams = new Gson().toJsonTree(params).getAsJsonObject();
+        return create(name, type, jsonParams);
     }
 
     public Skill update(String name, Skill updateSkill) {
-        api.updateSkill(this.project.getName(), name, updateSkill.name, updateSkill.type, updateSkill.params);
+        JsonObject params = new JsonObject();
+        for (Map.Entry<String, Object> entry : updateSkill.params.entrySet()) {
+            params.add(entry.getKey(), new Gson().toJsonTree(entry.getValue()));
+        }
+        api.updateSkill(this.project.getName(), name, updateSkill.name, updateSkill.type, params);
         return updateSkill;
     }
 

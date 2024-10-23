@@ -14,8 +14,8 @@ import tech.tablesaw.api.Row;
 import tech.tablesaw.columns.Column;
 
 public class KnowledgeBases {
-    private Project project;
-    private RestAPI api;
+    private final Project project;
+    private final RestAPI api;
 
     public KnowledgeBases(Project project, RestAPI api) {
         this.project = project;
@@ -34,7 +34,7 @@ public class KnowledgeBases {
         List<KnowledgeBase> knowledgeBases = new ArrayList<>();
         for (Row row : response) {
             Map<String, Object> data = new HashMap<>();
-            for (Column column : response.columns()) {
+            for (Column<?> column : response.columns()) {
                 data.put(column.name(), row.getObject(column.name()));
             }
             KnowledgeBase knowledgeBase = new KnowledgeBase(api, project, data);
@@ -83,16 +83,23 @@ public class KnowledgeBases {
             paramsOut.putAll(params);
         }
 
-        String modelName = model != null ? String.format("%s.%s", model.project.getName(), model.name) : null;
-        String storageName = storage != null ? String.format("%s.%s", storage.db.name, storage.name) : null;
+        String astQuery = "CREATE KNOWLEDGE BASE " + project.getName() + "." + name;
 
-        String astQuery = String.format(
-                "CREATE KNOWLEDGE BASE %s.%s WITH MODEL %s STORAGE %s PARAMS %s;",
-                project.getName(),
-                name,
-                modelName,
-                storageName,
-                new JSONObject(paramsOut).toString());
+        String modelName = model != null ? String.format("%s.%s", model.getProject().getName(), model.getName()) : null;
+        String storageName = storage != null ? String.format("%s.%s", storage.db.getName(), storage.name) : null;
+
+        if (modelName != null || storageName != null || !paramsOut.isEmpty()) {
+            astQuery += " USING";
+            if (modelName != null) {
+                astQuery += " MODEL = " + modelName;
+            }
+            if (storageName != null) {
+                astQuery += " STORAGE = " + storageName;
+            }
+            if (!paramsOut.isEmpty()) {
+                astQuery += " PARAMS = " + new JSONObject(paramsOut).toString();
+            }
+        }
 
         api.sqlQuery(astQuery, project.getName());
 

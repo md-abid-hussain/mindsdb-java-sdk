@@ -23,7 +23,7 @@ public class Projects {
 
     public List<Project> list() {
         return _listProjects().stream()
-                .map(name -> new Project(server, api, name))
+                .map(name -> new Project(api, name))
                 .collect(Collectors.toList());
     }
 
@@ -31,13 +31,13 @@ public class Projects {
         if (!_listProjects().contains(name)) {
             throw new IllegalArgumentException("Project doesn't exist");
         }
-        return new Project(server, api, name);
+        return new Project(api, name);
     }
 
     public Project create(String name) {
         String astQuery = String.format("CREATE DATABASE %s WITH ENGINE 'mindsdb'", name);
         api.sqlQuery(astQuery);
-        return new Project(server, api, name);
+        return new Project(api, name);
     }
 
     public void drop(String name) {

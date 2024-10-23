@@ -2,10 +2,12 @@ package mindsdb.services;
 
 import java.util.List;
 
+import lombok.Getter;
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Database;
 import mindsdb.models.Table;
 
+@Getter
 public class Tables {
     public final Database database;
     public final RestAPI api;
@@ -55,18 +57,18 @@ public class Tables {
      * @return Table
      */
     public Table create(String name, Query query, boolean replace) {
-        String tableName = this.database.name + "." + name;
+        String tableName = this.database.getName() + "." + name;
         String astQuery;
         String replaceStr = "";
         if (replace) {
             replaceStr = " OR REPLACE";
         }
-        if (query.database != null) {
+        if (query.getDatabase() != null) {
 
-            astQuery = String.format("CREATE%s TABLE %s SELECT * FROM %s (%s)'", replaceStr, tableName,
-                    query.database, query.sql);
+            astQuery = String.format("CREATE%s TABLE %s SELECT * FROM %s (%s)", replaceStr, tableName,
+                    query.getDatabase(), query.getSql());
         } else {
-            astQuery = String.format("CREATE%s TABLE %s (%s)", replaceStr, tableName, query.sql);
+            astQuery = String.format("CREATE%s TABLE %s (%s)", replaceStr, tableName, query.getSql());
         }
 
         this.api.sqlQuery(astQuery);
@@ -84,7 +86,7 @@ public class Tables {
     public Table create(String name, tech.tablesaw.api.Table df, Boolean replace) {
         this.api.uploadFile(name, df);
 
-        if (this.database.name.equals("files")) {
+        if (this.database.getName().equals("files")) {
             if (name.contains(".")) {
                 name = name.split("\\.")[0];
             }
@@ -101,7 +103,7 @@ public class Tables {
      * @param tableName
      */
     public void drop(String tableName) {
-        String sql = String.format("DROP TABLE %s", this.database.name + "." + tableName);
+        String sql = String.format("DROP TABLE %s", this.database.getName() + "." + tableName);
         this.api.sqlQuery(sql);
     }
 

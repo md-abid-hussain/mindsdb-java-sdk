@@ -103,8 +103,10 @@ public class Models {
             String engine,
             String query,
             String database,
-            Map<String, String> options,
+            Map<String, Object> options,
             Map<String, Object> timeseriesOptions) {
+
+        System.out.println("inside model create");
 
         StringBuilder astQuery = new StringBuilder();
 
@@ -140,16 +142,35 @@ public class Models {
             }
         }
 
-        if (options != null && !options.isEmpty()) {
+        Map<String, Object> modelOptions = new HashMap<>(options);
+
+        if (engine != null) {
+            modelOptions.put("engine", engine);
+        }
+
+        if (!modelOptions.isEmpty()) {
             astQuery.append(" USING ");
-            options.forEach((key, value) -> astQuery.append(key).append(" = '").append(value).append("', "));
+            modelOptions.forEach((key, value) -> {
+                if (value instanceof String) {
+                    astQuery.append(key).append(" = ").append("\'").append(value).append("\', ");
+                } else if (value instanceof List) {
+                    astQuery.append(key).append(" = ").append("[");
+                    ((List<String>) value).forEach(v -> astQuery.append("\'").append(v).append("\', "));
+                    // Remove the trailing comma and space
+                    astQuery.setLength(astQuery.length() - 2);
+                    astQuery.append("], ");
+
+                } else {
+                    astQuery.append(key).append(" = ").append(value).append(", ");
+                }
+            });
             // Remove the trailing comma and space
             astQuery.setLength(astQuery.length() - 2);
         }
 
         astQuery.append(";");
 
-        Table modelData = project.api.sqlQuery(astQuery.toString());
+        Table modelData = project.getApi().sqlQuery(astQuery.toString());
 
         Map<String, Object> dataMap = new HashMap<>();
         for (String columnName : modelData.columnNames()) {

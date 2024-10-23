@@ -66,7 +66,7 @@ public class QueryTest {
         assertEquals("Query(SELECT * FROM table)", result);
 
         // Test with a longer SQL string
-        query.sql = "SELECT * FROM table WHERE column1 = 'value1' AND column2 = 'value2'";
+        query.setSql("SELECT * FROM table WHERE column1 = 'value1' AND column2 = 'value2'");
         result = query.toString();
         assertEquals("Query(SELECT * FROM table WHERE column1 = '...)", result);
     }

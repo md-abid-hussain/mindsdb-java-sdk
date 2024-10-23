@@ -45,10 +45,10 @@ public class DatabasesTest {
         List<Database> databaseList = databases.list();
 
         assertEquals(2, databaseList.size());
-        assertEquals("db1", databaseList.get(0).name);
-        assertEquals("mysql", databaseList.get(0).engine);
-        assertEquals("db2", databaseList.get(1).name);
-        assertEquals("postgres", databaseList.get(1).engine);
+        assertEquals("db1", databaseList.get(0).getName());
+        assertEquals("mysql", databaseList.get(0).getEngine());
+        assertEquals("db2", databaseList.get(1).getName());
+        assertEquals("postgres", databaseList.get(1).getEngine());
     }
 
     @Test
@@ -64,8 +64,8 @@ public class DatabasesTest {
         Database database = databases.get("db1");
 
         assertNotNull(database);
-        assertEquals("db1", database.name);
-        assertEquals("mysql", database.engine);
+        assertEquals("db1", database.getName());
+        assertEquals("mysql", database.getEngine());
     }
 
     @Test
