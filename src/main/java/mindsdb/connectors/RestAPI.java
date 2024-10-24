@@ -168,7 +168,7 @@ public final class RestAPI {
                 JSONArray rows = data.getJSONArray("data");
 
                 Table df = Table.create();
-                for (var col : columns) {
+                for (Object col : columns) {
                     df.addColumns(StringColumn.create(col.toString().toLowerCase()));
                 }
                 for (int index = 0; index < rows.length(); index++) {
