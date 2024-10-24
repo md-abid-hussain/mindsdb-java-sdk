@@ -6,7 +6,7 @@
 
     <groupId>io.github.md-abid-hussain</groupId>
     <artifactId>mindsdb-java-sdk</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
 
     <name>MindsDB Java SDK</name>
@@ -35,21 +35,8 @@
     </scm>
 
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
     </properties>
-
-    <!-- <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.konghq</groupId>
-                <artifactId>unirest-java-bom</artifactId>
-                <version>4.4.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement> -->
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
