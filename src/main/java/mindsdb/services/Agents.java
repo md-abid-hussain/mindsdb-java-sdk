@@ -193,7 +193,6 @@ public class Agents {
      */
     public List<Agent> list() {
         JsonArray jsonAgents = api.agents(project.getName());
-        System.out.println(jsonAgents);
         List<Agent> agents = new ArrayList<>();
         for (JsonElement jsonAgent : jsonAgents) {
             JsonObject agentData = jsonAgent.getAsJsonObject();

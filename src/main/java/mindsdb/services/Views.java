@@ -38,7 +38,6 @@ public class Views {
      * @return List of View objects
      */
     public List<View> list() {
-        System.out.println(listViews());
         return listViews().stream()
                 .map(viewName -> new View(project, viewName))
                 .toList();

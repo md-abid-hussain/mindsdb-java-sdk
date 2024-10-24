@@ -150,7 +150,6 @@ public final class RestAPI {
         }
         String endpointUrl = this.url + "/api/sql/query";
         String sqlPayload = String.format("{\"query\": \"%s\", \"context\": {\"db\": \"%s\"}}", sql, database);
-        System.out.println(sqlPayload);
         try {
             HttpResponse<String> response = session.post(endpointUrl)
                     .header("Content-Type", "application/json")
@@ -637,8 +636,6 @@ public final class RestAPI {
             row.put(key, data.get(key));
         }
         dataJson.put(row);
-
-        System.out.println(dataJson);
 
         String endpointUrl = this.url + "/api/projects/" + project + "/models/" + modelName + "/predict";
         HttpResponse<String> response = session.post(endpointUrl)

@@ -147,7 +147,6 @@ public class Models {
             Map<String, Object> options,
             Map<String, Object> timeseriesOptions) {
 
-        System.out.println("inside model create");
 
         StringBuilder astQuery = new StringBuilder();
 
