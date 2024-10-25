@@ -10,7 +10,7 @@ To use the MindsDB Java SDK, include the following dependency in your `pom.xml`:
 <dependency>
     <groupId>com.mindsdb</groupId>
     <artifactId>mindsdb-java-sdk</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
 </dependency>
 ```
 
