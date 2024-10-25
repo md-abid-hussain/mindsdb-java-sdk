@@ -1,0 +1,7 @@
+mindsdb
+mindsdb.connectors
+mindsdb.models
+mindsdb.models.agent
+mindsdb.models.skill
+mindsdb.services
+mindsdb.utils
