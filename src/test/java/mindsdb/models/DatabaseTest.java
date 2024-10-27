@@ -18,7 +18,6 @@ import org.mockito.MockitoAnnotations;
 import mindsdb.connectors.RestAPI;
 import mindsdb.services.Query;
 import mindsdb.services.Tables;
-import tech.tablesaw.api.StringColumn;
 import tech.tablesaw.api.Table;
 
 public class DatabaseTest {
@@ -109,17 +108,5 @@ public class DatabaseTest {
 
         assertNotNull(table);
         assertEquals("table1", table.getName());
-    }
-
-    private Table createMockTable(String[] columnNames, String[][] data) {
-        StringColumn[] columns = new StringColumn[columnNames.length];
-        for (int i = 0; i < columnNames.length; i++) {
-            StringColumn column = StringColumn.create(columnNames[i]);
-            for (String[] row : data) {
-                column.append(row[i]);
-            }
-            columns[i] = column;
-        }
-        return Table.create(columns);
     }
 }
