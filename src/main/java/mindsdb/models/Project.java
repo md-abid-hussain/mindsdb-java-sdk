@@ -68,18 +68,6 @@ public class Project {
         return new Query(api, sql, name);
     }
 
-    /**
-     * Drop a model version
-     * 
-     * @param modelName Name of the model
-     * @param version   Version of the model
-     * 
-     */
-    public void dropModelVersion(String modelName, int version) {
-        String astQuery = String.format("DROP MODEL %s.%s", this.name, modelName);
-        query(astQuery).fetch();
-    }
-
     @Override
     public String toString() {
         return String.format("Project(%s)", name);
@@ -314,6 +302,27 @@ public class Project {
      */
     public Model getModel(String name) {
         return models.getModel(name);
+    }
+
+    /**
+     * Drop a Model
+     * 
+     * @param modelName
+     * @param version
+     */
+    public void dropModel(String modelName) {
+        this.models.drop(modelName);
+    }
+
+    /**
+     * Drop a model version
+     * 
+     * @param modelName Name of the model
+     * @param version   Version of the model
+     * 
+     */
+    public void dropModelVersion(String modelName, int version) {
+       this.models.dropVersion(name, version);
     }
 
     // Knowledgebases

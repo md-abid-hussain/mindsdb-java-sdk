@@ -226,4 +226,23 @@ public class Models {
         return new Model(project, dataMap);
     }
 
+    /**
+     * Drop a model
+     * @param name - name of the model
+     */
+    public void drop(String name) {
+        String astQuery = String.format("DROP MODEL %s.%s", this.project.getName(), name);
+        project.query(astQuery).fetch();
+    }
+
+    /**
+     * Drop a model version
+     * @param name - name of the model
+     * @param version - version of the model
+     */
+    public void dropVersion(String name, int version) {
+        String astQuery = String.format("DROP MODEL %s.%s VERSION %d", this.project.getName(), name, version);
+        project.query(astQuery).fetch();
+    }
+
 }
