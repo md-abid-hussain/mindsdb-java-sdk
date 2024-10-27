@@ -241,7 +241,7 @@ public class Models {
      * @param version - version of the model
      */
     public void dropVersion(String name, int version) {
-        String astQuery = String.format("DROP MODEL %s.%s VERSION %d", this.project.getName(), name, version);
+        String astQuery = String.format("DROP MODEL %s.%s.%d", this.project.getName(), name, version);
         project.query(astQuery).fetch();
     }
 
