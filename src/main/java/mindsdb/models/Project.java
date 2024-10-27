@@ -23,7 +23,10 @@ public class Project {
     private final RestAPI api;
     private final Jobs jobs;
     private final Views views;
-    private final Models models;
+    /**
+     * The Models service for managing models.
+     */
+    public final Models models;
     private final KnowledgeBases knowledgeBases;
     private final Skills skills;
     private final Databases databases;
