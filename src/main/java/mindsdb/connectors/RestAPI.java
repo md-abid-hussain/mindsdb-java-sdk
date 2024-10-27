@@ -663,7 +663,7 @@ public final class RestAPI {
                     } else if (rowData.isNull(key)) {
                         value = null;
                     }
-                    df.stringColumn(key).append((String) value);
+                    df.stringColumn(key).append(value != null ? value.toString() : null);
                 }
             }
         }
