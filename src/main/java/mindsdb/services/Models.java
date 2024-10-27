@@ -182,7 +182,12 @@ public class Models {
             }
         }
 
-        Map<String, Object> modelOptions = new HashMap<>(options);
+        Map<String, Object> modelOptions;
+        if(options!=null){
+            modelOptions = new HashMap<>(options);
+        } else {
+            modelOptions = new HashMap<>();
+        }
 
         if (engine != null) {
             modelOptions.put("engine", engine);
