@@ -5,7 +5,6 @@ import java.util.Map;
 
 import com.google.gson.JsonObject;
 
-import kong.unirest.core.json.JSONObject;
 import mindsdb.connectors.RestAPI;
 import mindsdb.models.Database;
 import mindsdb.models.Handler;
@@ -87,6 +86,15 @@ public class Server extends Project {
     }
 
     /**
+     * Get default 'mindsdb' project
+     * 
+     * @return Project
+     */
+    public Project getProject() {
+        return projects.get("mindsdb");
+    }
+
+    /**
      * Get A project
      * 
      * @param name Name of the project
@@ -147,24 +155,24 @@ public class Server extends Project {
     /**
      * Create an ML engine
      * 
-     * @param name           Name of the ML engine
-     * @param handler        Handler object
-     * @param connectionData Connection data
+     * @param name           - Name of the ML engine
+     * @param handler        - Handler object
+     * @param connectionData - Connection data
      * @return MLEngine
      */
-    public MLEngine createMLEngine(String name, Handler handler, JSONObject connectionData) {
+    public MLEngine createMLEngine(String name, Handler handler, Map<String, String> connectionData) {
         return mlEngines.create(name, handler, connectionData);
     }
 
     /**
      * Create an ML engine
      * 
-     * @param name           Name of the ML engine
-     * @param handlerName    Name of the handler
-     * @param connectionData Connection data
+     * @param name           - Name of the ML engine
+     * @param handlerName    - Name of the handler
+     * @param connectionData - Connection data
      * @return MLEngine
      */
-    public MLEngine createMLEngine(String name, String handlerName, JSONObject connectionData) {
+    public MLEngine createMLEngine(String name, String handlerName, Map<String, String> connectionData) {
         return mlEngines.create(name, handlerName, connectionData);
     }
 

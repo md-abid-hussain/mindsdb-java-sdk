@@ -1,6 +1,7 @@
 package mindsdb.services;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import kong.unirest.core.json.JSONObject;
@@ -26,10 +27,14 @@ public class MLEngines {
     private List<MLEngine> _listMLEngines() {
         Table response = api.sqlQuery("SHOW ML_ENGINES;");
 
-        return response.stream().map(row -> new MLEngine(
-                row.getString("NAME"),
-                row.getString("HANDLER"),
-                new JSONObject(row.getString("CONNECTION_DATA"))))
+        return response.stream().map(row -> {
+            String name = row.getString("name");
+            String handler = row.getString("handler");
+            JSONObject connectionData = new JSONObject(row.getString("connection_data"));
+            Map<String, String> connectionDataMap = connectionData.toMap().entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toString()));
+            return new MLEngine(name, handler, connectionDataMap);
+        })
                 .collect(Collectors.toList());
     }
 
@@ -55,23 +60,23 @@ public class MLEngines {
 
     /**
      * Create a new ML engine
-     * @param name         - name of the engine
-     * @param handler     - handler of the engine
+     * @param name           - name of the engine
+     * @param handler        - handler of the engine
      * @param connectionData - connection data for the engine
      * @return MLEngine object
      */
-    public MLEngine create(String name, Handler handler, JSONObject connectionData) {
+    public MLEngine create(String name, Handler handler, Map<String, String> connectionData) {
         return create(name, handler.getName(), connectionData);
     }
 
     /**
      * Create a new ML engine
-     * @param name        - name of the engine
-     * @param handlerName - handler of the engine 
+     * @param name           - name of the engine
+     * @param handlerName    - handler of the engine 
      * @param connectionData - connection data for the engine
      * @return MLEngine object
      */
-    public MLEngine create(String name, String handlerName, JSONObject connectionData) {
+    public MLEngine create(String name, String handlerName, Map<String, String> connectionData) {
         StringBuilder astQuery = new StringBuilder("CREATE ML_ENGINE IF NOT EXISTS " + name + " FROM " + handlerName);
         if (connectionData != null) {
             astQuery.append(" USING ");

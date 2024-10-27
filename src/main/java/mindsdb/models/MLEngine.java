@@ -1,6 +1,7 @@
 package mindsdb.models;
 
-import kong.unirest.core.json.JSONObject;
+import java.util.Map;
+
 import lombok.Getter;
 
 /**
@@ -10,7 +11,7 @@ import lombok.Getter;
 public class MLEngine {
     private final String name;
     private final String handler;
-    private final JSONObject connectionData;
+    private final Map<String, String> connectionData;
 
     /**
      * Constructor for MLEngine
@@ -19,7 +20,7 @@ public class MLEngine {
      * @param handler        - handler of the engine
      * @param connectionData - connection data for the engine
      */
-    public MLEngine(String name, String handler, JSONObject connectionData) {
+    public MLEngine(String name, String handler, Map<String, String> connectionData) {
         this.name = name;
         this.handler = handler;
         this.connectionData = connectionData;

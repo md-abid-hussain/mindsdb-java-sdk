@@ -1,25 +1,27 @@
 package mindsdb.models;
 
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import kong.unirest.core.json.JSONObject;
 
 public class MLEngineTest {
     private MLEngine mlEngine;
     private String name;
     private String handler;
-    private JSONObject connectionData;
+    private Map<String,String> connectionData;
 
     @BeforeEach
     public void setUp() {
         name = "testEngine";
         handler = "testHandler";
-        connectionData = new JSONObject();
-        connectionData.put("host", "localhost");
-        connectionData.put("port", 8080);
+        connectionData = Map.of(
+            "host", "localhost",
+            "port", "8080"
+        );
         mlEngine = new MLEngine(name, handler, connectionData);
     }
 
@@ -43,7 +45,7 @@ public class MLEngineTest {
     @Test
     public void testGetConnectionData() {
         assertNotNull(mlEngine.getConnectionData());
-        assertEquals("localhost", mlEngine.getConnectionData().getString("host"));
-        assertEquals(8080, mlEngine.getConnectionData().getInt("port"));
+        assertEquals("localhost", mlEngine.getConnectionData().get("host"));
+        assertEquals("8080", mlEngine.getConnectionData().get("port"));
     }
 }
