@@ -135,7 +135,11 @@ public class Model {
         return (String) data.get("status");
     }
 
-    private Map<String, Object> refresh() {
+    /**
+     * Refresh the model
+     * @return data of the model
+     */
+    public Map<String, Object> refresh() {
         Model model = version != null ? project.getModelWithVersion(name, version) : project.getModel(name);
         if (model != null) {
             this.data = model.data;
