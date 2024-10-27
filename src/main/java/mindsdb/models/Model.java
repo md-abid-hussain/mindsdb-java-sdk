@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 import lombok.Setter;
+import tech.tablesaw.api.Table;
 
 /**
  * Model class for handling model.
@@ -64,7 +65,7 @@ public class Model {
      * @param params prediction parameters
      * @return prediction result in Tablesaw Table
      */
-    public tech.tablesaw.api.Table predict(tech.tablesaw.api.Table data, Map<String, String> params) {
+    public Table predict(Table data, Map<String, String> params) {
         return project.getApi().modelPredict(project.getName(), name, data, params, version);
     }
 
@@ -74,8 +75,20 @@ public class Model {
      * @param data input data
      * @return prediction result in Tablesaw Table
      */
-    public tech.tablesaw.api.Table predict(tech.tablesaw.api.Table data) {
+    public Table predict(Table data) {
         return project.getApi().modelPredict(project.getName(), name, data, null,
+                version);
+    }
+
+    /**
+     * Make prediction with the model using MDBTable
+     * 
+     * @param data   MDBTable input data
+     * @param params prediction parameters
+     * @return prediction result in Tablesaw Table
+     */
+    public Table predict(MDBTable data){
+        return project.getApi().modelPredict(project.getName(), name, data.fetch(), null,
                 version);
     }
 
@@ -86,7 +99,7 @@ public class Model {
      * @param params    prediction parameters
      * @return prediction result in Tablesaw Table
      */
-    public tech.tablesaw.api.Table predict(Map<String, String> data, Map<String, String> params) {
+    public Table predict(Map<String, String> data, Map<String, String> params) {
         return project.getApi().modelPredict(project.getName(), name, data, params, version);
     }
 
@@ -96,7 +109,7 @@ public class Model {
      * @param data input data
      * @return prediction result in Tablesaw Table
      */
-    public tech.tablesaw.api.Table predict(Map<String, String> data) {
+    public Table predict(Map<String, String> data) {
         return project.getApi().modelPredict(project.getName(), name, data, null,
                 version);
     }
@@ -154,7 +167,7 @@ public class Model {
      *             optional
      * @return dataframe with result of description
      */
-    public tech.tablesaw.api.Table describe(String type) {
+    public Table describe(String type) {
         String identifier = String.format("%s.%s", project.getName(), name);
         if (type != null) {
             identifier += "." + type;
@@ -169,7 +182,7 @@ public class Model {
      * 
      * @return dataframe with result of description
      */
-    public tech.tablesaw.api.Table describe() {
+    public Table describe() {
         return describe(null);
     }
 
@@ -251,7 +264,7 @@ public class Model {
         }
 
         String sql = createAstQuery(operation, query, database, options);
-        tech.tablesaw.api.Table modelData = project.getApi().sqlQuery(sql);
+        Table modelData = project.getApi().sqlQuery(sql);
 
         Map<String, Object> dataMap = new HashMap<>();
         for (String columnName : modelData.columnNames()) {
