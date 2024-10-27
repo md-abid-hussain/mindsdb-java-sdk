@@ -307,8 +307,7 @@ public class Project {
     /**
      * Drop a Model
      * 
-     * @param modelName
-     * @param version
+     * @param modelName - Name of the model
      */
     public void dropModel(String modelName) {
         this.models.drop(modelName);
@@ -322,7 +321,7 @@ public class Project {
      * 
      */
     public void dropModelVersion(String modelName, int version) {
-       this.models.dropVersion(name, version);
+       this.models.dropVersion(modelName, version);
     }
 
     // Knowledgebases
