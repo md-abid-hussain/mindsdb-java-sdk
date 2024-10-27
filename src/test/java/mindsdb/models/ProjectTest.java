@@ -26,6 +26,7 @@ import mindsdb.services.Query;
 import mindsdb.services.Views;
 
 public class ProjectTest {
+
     @Mock
     private RestAPI api;
     private Project project;
@@ -59,15 +60,19 @@ public class ProjectTest {
 
     @Test
     public void testDropModelVersion() {
-        Query mockQuery = mock(Query.class);
-        when(mockQuery.fetch()).thenReturn(null);
+        Models mockModels = mock(Models.class);
 
-        Project spyProject = org.mockito.Mockito.spy(project);
-        when(spyProject.query(anyString())).thenReturn(mockQuery);
+        try {
+            java.lang.reflect.Field modelsField = Project.class.getDeclaredField("models");
+            modelsField.setAccessible(true);
+            modelsField.set(project, mockModels);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            fail("Failed to set the models field: " + e.getMessage());
+        }
 
-        spyProject.dropModelVersion("testModel", 1);
+        project.dropModelVersion("testModel", 1);
 
-        verify(spyProject.query("DROP MODEL testProject.testModel"), times(1)).fetch();
+        verify(mockModels, times(1)).dropVersion("testModel", 1);
     }
 
     @Test
