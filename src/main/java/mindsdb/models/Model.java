@@ -84,7 +84,6 @@ public class Model {
      * Make prediction with the model using MDBTable
      * 
      * @param data   MDBTable input data
-     * @param params prediction parameters
      * @return prediction result in Tablesaw Table
      */
     public Table predict(MDBTable data){
