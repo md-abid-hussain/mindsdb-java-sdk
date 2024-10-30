@@ -149,6 +149,19 @@ public class Jobs {
     }
 
     /**
+     * Create job without query string
+     * @param name      - name of the job
+     * @param startAt   - start time
+     * @param endAt     - end time
+     * @param repeatStr - repeat string
+     * @param repeatMin - repeat minutes
+     * @return Job object
+     */
+    public Job create(String name, LocalDateTime startAt, LocalDateTime endAt, String repeatStr, Integer repeatMin) {
+        return create(name, null, startAt, endAt, repeatStr, repeatMin);
+    }
+
+    /**
      * Create job with name and query string
      *
      * @param name     name of the job

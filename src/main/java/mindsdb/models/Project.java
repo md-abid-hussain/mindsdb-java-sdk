@@ -120,6 +120,19 @@ public class Project {
     }
 
     /**
+     * Create job without query string
+     * @param name      - name of the job
+     * @param startAt   - start time
+     * @param endAt     - end time
+     * @param repeatStr - repeat string
+     * @param repeatMin - repeat minutes
+     * @return Job object
+     */
+    public Job createJob(String name, LocalDateTime startAt, LocalDateTime endAt, String repeatStr, Integer repeatMin) {
+        return createJob(name, null, startAt, endAt, repeatStr, repeatMin);
+    }
+
+    /**
      * Create job with name and query string
      *
      * @param name     name of the job
@@ -211,6 +224,14 @@ public class Project {
     public Job createJob(String name, List<String> queryStr, LocalDateTime startAt, LocalDateTime endAt,
             Integer repeatMin) {
         return createJob(name, String.join("; ", queryStr), startAt, endAt, null, repeatMin);
+    }
+
+    /**
+     * Drop a job
+     * @param name name of the job
+     */
+    public void dropJob(String name){
+        jobs.drop(name);
     }
 
     // Views
