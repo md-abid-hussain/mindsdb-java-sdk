@@ -415,7 +415,7 @@ public class Agents {
     public Agent create(String name, String model, String provider, List<String> skills, Map<String, Object> params) {
         List<String> skillNames = new ArrayList<>();
 
-        if (skills != null) {
+        if (skills != null && !skills.isEmpty()) {
             for (String skill : skills) {
                 this.skills.get(skill);
                 skillNames.add(skill);
@@ -436,7 +436,7 @@ public class Agents {
             model = DEFAULT_LLM_MODEL;
         }
 
-        JsonObject agentData = this.api.createAgent(this.project.getName(), name, model, provider, skillNames, params);
+        JsonObject agentData = this.api.createAgent(this.project.getName(), name, model, provider, skillNames, agentParams);
 
         Agent agent = Agent.fromJson(agentData, this);
 

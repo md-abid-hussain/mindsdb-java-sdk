@@ -229,7 +229,7 @@ public final class RestAPI {
         agentDetails.addProperty("model_name", model);
         agentDetails.add("skills", gson.toJsonTree(skills));
         agentDetails.add("params", gson.toJsonTree(params));
-        agentDetails.add("provider", gson.toJsonTree("None"));
+        agentDetails.add("provider", gson.toJsonTree(provider));
 
         JsonObject payload = new JsonObject();
         payload.add("agent", agentDetails);
