@@ -444,6 +444,16 @@ public class Agents {
     }
 
     /**
+     * Create an agent
+     * 
+     * @param name - Name of the agent
+     * @return  Agent
+     */
+    public Agent create(String name){
+        return create(name, null, null, null, null);
+    }
+
+    /**
      * Update an agent
      * 
      * @param name         - Name of the agent
