@@ -51,7 +51,10 @@ public class Database {
     private String name;
     private String engine;
     private RestAPI api;
-    private Tables tables;
+    /**
+     * Tables object
+     */
+    public Tables tables;
     private Project project;
 
     /**
@@ -100,6 +103,7 @@ public class Database {
      * @return Query object
      */
     public Query query(String sql) {
+        System.out.println("Querying database: " + this.name);
         return new Query(this.api, sql, this.name);
     }
 

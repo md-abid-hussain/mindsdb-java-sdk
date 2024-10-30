@@ -8,16 +8,16 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import mindsdb.services.Query;
 import tech.tablesaw.api.Row;
+import tech.tablesaw.api.Table;
 
 /**
- * The MDBTable class represents a table in the MindsDB system.
- * It extends the Query class and provides methods to interact with the table,
- * such as filtering, limiting, tracking, inserting, deleting, and updating
- * data.
- * 
+ * The MDBTable class represents a table in the MindsDB system. It extends the
+ * Query class and provides methods to interact with the table, such as
+ * filtering, limiting, tracking, inserting, deleting, and updating data.
+ *
  * <p>
  * Example usage:
- * 
+ *
  * <pre>
  * {@code
  * Database db = server.getDatabase("my_database");
@@ -29,30 +29,32 @@ import tech.tablesaw.api.Row;
  * table.update(Map.of("column1", "new_value"), "column2=value2");
  * }
  * </pre>
- * 
+ *
  * <p>
  * The class also overrides the {@code toString} method to provide a string
  * representation of the MDBTable object.
  * </p>
- * 
+ *
  * @see Database
  * @see Query
  * @see tech.tablesaw.api.Table
  */
 @Getter
 public class MDBTable extends Query {
+
     private String name;
     private String tableName;
     private Database db;
     private Map<String, String> filters;
     private Integer limit;
     private String trackColumn;
+    private Project project;
 
     /**
      * Create a new Mindsdb Table object
-     * 
+     *
      * @param database - Database object
-     * @param name     - Name of the table
+     * @param name - Name of the table
      */
     public MDBTable(Database database, String name) {
         super(database.getApi(), "");
@@ -67,13 +69,14 @@ public class MDBTable extends Query {
 
     /**
      * Create a new Mindsdb Table object
-     * 
+     *
      * @param project - Project object
-     * @param name    - Name of the table
+     * @param name - Name of the table
      */
     public MDBTable(Project project, String name) {
         super(project.getApi(), "");
         this.name = name;
+        this.project = project;
         this.tableName = project.getName() + "." + name;
         this.updateQuery();
 
@@ -119,7 +122,7 @@ public class MDBTable extends Query {
 
     // Creates a copy of the filters to ensure immutability of the original table
     private Map<String, String> copyFilters() {
-        return new HashMap<>(this.filters);
+        return this.filters == null ? new HashMap<>() : new HashMap<>(this.filters);
     }
 
     @Override
@@ -133,9 +136,8 @@ public class MDBTable extends Query {
     }
 
     /**
-     * Filter the table by key-value pairs
-     * >>> table.filter("a=1", "b=2") *
-     * 
+     * Filter the table by key-value pairs >>> table.filter("a=1", "b=2") *
+     *
      * @param filters - Key-value pairs to filter the table by
      * @return Table object with the filters set
      */
@@ -162,7 +164,7 @@ public class MDBTable extends Query {
 
     /**
      * Limit the number of rows returned by the query
-     * 
+     *
      * @param limit - Number of rows to limit the query to
      * @return Table object with the limit set
      */
@@ -176,12 +178,17 @@ public class MDBTable extends Query {
 
     /**
      * Track the table by a column
-     * 
+     *
      * @param column - Column to track the table by
      * @return Table object with the track column set
      */
     public MDBTable track(String column) {
-        MDBTable queryTable = new MDBTable(this.db, this.name);
+        MDBTable queryTable;
+        if(this.db != null) {
+            queryTable = new MDBTable(this.db, this.name);
+        } else {
+            queryTable = new MDBTable(this.project, this.name);
+        }
         queryTable.filters = this.copyFilters();
         queryTable.limit = this.limit;
         queryTable.trackColumn = column;
@@ -191,7 +198,7 @@ public class MDBTable extends Query {
 
     /**
      * Insert data into table
-     * 
+     *
      * @param query a Query object representing the data to insert
      */
     public void insert(Query query) {
@@ -207,10 +214,10 @@ public class MDBTable extends Query {
 
     /**
      * Insert data into table
-     * 
+     *
      * @param query a Tablesaw Table object representing the data to insert
      */
-    public void insert(tech.tablesaw.api.Table query) {
+    public void insert(Table query) {
         List<String> columns = query.columnNames();
 
         StringBuilder astQuery = new StringBuilder();
@@ -251,7 +258,8 @@ public class MDBTable extends Query {
      *
      * >>> table.delete("a=1", "b=2")
      *
-     * @param filters array of filters to filter deleted rows, delete("column=value", ...)
+     * @param filters array of filters to filter deleted rows,
+     * delete("column=value", ...)
      */
     public void delete(String... filters) {
 
@@ -271,9 +279,10 @@ public class MDBTable extends Query {
 
     /**
      * Update table by condition
-     * 
-     * @param values  a map representing fields to update
-     * @param filters array of filters to filter updated rows, update(values, "column=value", ...)
+     *
+     * @param values a map representing fields to update
+     * @param filters array of filters to filter updated rows, update(values,
+     * "column=value", ...)
      */
     public void update(Map<String, Object> values, String... filters) {
         if (values == null || values.isEmpty()) {
@@ -290,7 +299,7 @@ public class MDBTable extends Query {
 
         String setClause = values.entrySet().stream()
                 .map(e -> e.getKey() + " = "
-                        + (e.getValue() instanceof String ? "'" + e.getValue() + "'" : e.getValue()))
+                + (e.getValue() instanceof String ? "'" + e.getValue() + "'" : e.getValue()))
                 .collect(Collectors.joining(", "));
         updateQuery.append(setClause);
 
@@ -299,5 +308,27 @@ public class MDBTable extends Query {
         updateQuery.append(whereClause);
 
         this.db.getApi().sqlQuery(updateQuery.toString());
+    }
+
+    /**
+     * Update table by condition
+     * @param value a Query object representing the data to update
+     * @param on array of the columns to update on
+     */
+    public void update(Query value, List<String> on) {
+        if (on == null) {
+            throw new IllegalArgumentException("On cannot be null or empty.");
+        }
+
+        if (value.getDatabase() != null) {
+            StringBuilder astQuery = new StringBuilder();
+            astQuery.append("UPDATE ").append(this.tableName).append(" ON ").append(String.join(", ", on)).append(" FROM ");
+            String subquery = String.format("SELECT * FROM %s (%s)", value.getDatabase(), value.getSql());
+            astQuery.append("(").append(subquery).append(")");
+            this.getApi().sqlQuery(astQuery.toString());
+        } else {
+            String astQuery = String.format("UPDATE %s ON %s FROM (%s)", this.tableName, String.join(", ", on), value.getSql());
+            this.getApi().sqlQuery(astQuery);
+        }
     }
 }
