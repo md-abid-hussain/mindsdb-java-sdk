@@ -12,17 +12,17 @@ import com.google.gson.JsonObject;
 import lombok.Getter;
 
 /**
- * The Skill class represents a skill with a name, type, and parameters.
- * It provides constructors for creating a skill instance and methods for
+ * The Skill class represents a skill with a name, type, and parameters. It
+ * provides constructors for creating a skill instance and methods for
  * converting JSON data to a Skill object.
- * 
+ *
  * Attributes:
  * <ul>
  * <li>name: The name of the skill.</li>
  * <li>type: The type of the skill.</li>
  * <li>params: The parameters of the skill.</li>
  * </ul>
- * 
+ *
  * Methods:
  * <ul>
  * <li>Skill(String name, String type, Map&lt;String, Object&gt; params):
@@ -34,15 +34,18 @@ import lombok.Getter;
  */
 @Getter
 public class Skill {
+
     private final String name;
     private final String type;
-    private final Map<String, Object> params;
+    private Map<String, Object> params;
 
     /**
-     * Constructs a new Skill instance with the specified name, type, and parameters.
-     * @param name  The name of the skill.
-     * @param type  The type of the skill.
-     * @param params    The parameters of the skill.
+     * Constructs a new Skill instance with the specified name, type, and
+     * parameters.
+     *
+     * @param name The name of the skill.
+     * @param type The type of the skill.
+     * @param params The parameters of the skill.
      */
     public Skill(String name, String type, Map<String, Object> params) {
         this.name = name;
@@ -62,28 +65,37 @@ public class Skill {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         Skill other = (Skill) obj;
         if (name == null) {
-            if (other.name != null)
+            if (other.name != null) {
                 return false;
-        } else if (!name.equals(other.name))
+            }
+        } else if (!name.equals(other.name)) {
             return false;
+        }
         if (type == null) {
-            if (other.type != null)
+            if (other.type != null) {
                 return false;
-        } else if (!type.equals(other.type))
+            }
+        } else if (!type.equals(other.type)) {
             return false;
+        }
         if (params == null) {
-            if (other.params != null)
+            if (other.params != null) {
                 return false;
-        } else if (!params.equals(other.params))
+            }
+        } else if (!params.equals(other.params)) {
             return false;
+        }
         return true;
     }
 
@@ -94,7 +106,8 @@ public class Skill {
 
     /**
      * Returns a string representation of the Skill object.
-     * @return  A string representation of the Skill object.
+     *
+     * @return A string representation of the Skill object.
      */
     public String describe() {
         return "Skill(name=" + name + ", type=" + type + ", params=" + params + ")";
@@ -102,7 +115,7 @@ public class Skill {
 
     /**
      * Converts JSON data to a Skill object.
-     * 
+     *
      * @param json The JSON data to convert.
      * @return The Skill object created from the JSON data.
      */
@@ -116,11 +129,13 @@ public class Skill {
     }
 
     /**
-     * Creates parameters for a skill with the specified database, tables, and description.
-     * @param database  The database name.
-     * @param tables    The list of table names.
-     * @param description   The description of the skill.   
-     * @return  The parameters for the skill.
+     * Creates parameters for a skill with the specified database, tables, and
+     * description.
+     *
+     * @param database The database name.
+     * @param tables The list of table names.
+     * @param description The description of the skill.
+     * @return The parameters for the skill.
      */
     protected static Map<String, Object> createParams(String database, List<String> tables, String description) {
         JsonObject paramsJson = new JsonObject();
@@ -135,6 +150,15 @@ public class Skill {
         paramsJson.addProperty("description", description);
         return new Gson().fromJson(paramsJson, new TypeToken<Map<String, Object>>() {
         }.getType());
+    }
+
+    /**
+     * Update or set the parameters of the skill.
+     *
+     * @param params The parameters of the skill.
+     */
+    public void setParams(Map<String, Object> params) {
+        this.params = params;
     }
 
 }

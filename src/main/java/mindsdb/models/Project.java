@@ -27,7 +27,10 @@ public class Project {
      * The Models service for managing models.
      */
     public final Models models;
-    private final KnowledgeBases knowledgeBases;
+    /**
+     * The KnowledgeBases service for managing knowledge bases.
+     */
+    public final KnowledgeBases knowledgeBases;
     private final Skills skills;
     private final Databases databases;
     private final MLEngines mlEngines;

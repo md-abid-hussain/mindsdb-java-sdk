@@ -136,6 +136,16 @@ public class KnowledgeBases {
     }
 
     /**
+     * Create a new knowledge base with default parameters.
+     * 
+     * @param name The name of the knowledge base.
+     * @return The created knowledge base.
+     */
+    public KnowledgeBase create(String name){
+        return create(name, null, null, null, null, null, null);
+    }
+
+    /**
      * Drop a knowledge base by name.
      * @param name The name of the knowledge base to drop.
      */

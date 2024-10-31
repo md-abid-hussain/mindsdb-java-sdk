@@ -76,7 +76,7 @@ public class Skills {
                 tables.add(tableElement.getAsString());
             }
             String database = params.get("database").getAsString();
-            String description = params.get("description").getAsString();
+            String description = params.has("description") ? params.get("description").getAsString() : null;
             return new SQLSkill(name, tables, database, description);
         }
 
