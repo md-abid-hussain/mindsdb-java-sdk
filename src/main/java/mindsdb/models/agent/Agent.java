@@ -106,14 +106,14 @@ public class Agent {
     /**
      * Constructs a new Agent instance.
      *
-     * @param name      - the name of the agent
+     * @param name - the name of the agent
      * @param modelName - the name of the model associated with the agent
-     * @param skills    - the list of skills the agent possesses
-     * @param params    - additional parameters for the agent in JSON format
+     * @param skills - the list of skills the agent possesses
+     * @param params - additional parameters for the agent in JSON format
      * @param createdAt - the timestamp when the agent was created
      * @param updatedAt - the timestamp when the agent was last updated
-     * @param provider  - the provider of the agent
-     * @param agents    - the Agents instance associated with this agent
+     * @param provider - the provider of the agent
+     * @param agents - the Agents instance associated with this agent
      */
     public Agent(String name, String modelName, List<Skill> skills, JsonObject params, LocalDateTime createdAt,
             LocalDateTime updatedAt, String provider, Agents agents) {
@@ -134,7 +134,7 @@ public class Agent {
 
     /**
      * Returns a string representation of the agent.
-     * 
+     *
      * @return A string representation of the agent.
      */
     public String describe() {
@@ -144,11 +144,11 @@ public class Agent {
 
     /**
      * Constructor for Agent
-     * 
-     * @param name      - name of the agent
+     *
+     * @param name - name of the agent
      * @param modelName - name of the model
-     * @param skills    - list of skills
-     * @param params    - parameters
+     * @param skills - list of skills
+     * @param params - parameters
      * @param createdAt - created at
      * @param updatedAt - updated at
      */
@@ -160,7 +160,7 @@ public class Agent {
     /**
      * Converts JSON data to an Agent object.
      *
-     * @param data   - the JSON data to convert
+     * @param data - the JSON data to convert
      * @param agents - the Agents instance associated with this agent
      * @return An Agent object created from the JSON data.
      */
@@ -186,14 +186,15 @@ public class Agent {
     /**
      * Generates a completion for the given list of messages.
      *
-     * This method takes a list of messages, where each message is represented as a
-     * map of key-value pairs.
-     * It converts each message into a JSON object and then calls the completion
-     * method of the agents with the name and the list of JSON objects.
+     * This method takes a list of messages, where each message is represented
+     * as a map of key-value pairs. It converts each message into a JSON object
+     * and then calls the completion method of the agents with the name and the
+     * list of JSON objects.
      *
-     * @param messages A list of messages, where each message is a map of key-value
-     *                 pairs.
-     * @return An AgentCompletion object containing the result of the completion.
+     * @param messages A list of messages, where each message is a map of
+     * key-value pairs.
+     * @return An AgentCompletion object containing the result of the
+     * completion.
      */
     public AgentCompletion completion(List<Map<String, String>> messages) {
         JsonObject messageObject = new JsonObject();
@@ -206,4 +207,62 @@ public class Agent {
         return this.agents.completion(name, List.of(messageObject));
     }
 
+    /**
+     * Add files to the agent.
+     *
+     * @param filePaths - list of file paths
+     * @param description - description of the files
+     * @param knowledgebase - knowledgebase
+     */
+    public void addFiles(List<String> filePaths, String description, String knowledgebase) {
+        this.agents.addFiles(this.name, filePaths, description, knowledgebase);
+    }
+
+    /**
+     * Add a file to the agent.
+     *
+     * @param filePath - file path
+     * @param description - description of the file
+     * @param knowledgebase - knowledgebase
+     */
+    public void addFile(String filePath, String description, String knowledgebase) {
+        this.agents.addFile(this.name, filePath, description, knowledgebase);
+    }
+
+    /**
+     * Add web pages to the agent.
+     *
+     * @param urls - list of URLs
+     * @param description - description of the web pages
+     * @param knowledgebase - knowledgebase
+     * @param crawlDepth - crawl depth
+     * @param filters - list of filters
+     */
+    public void addWebPages(List<String> urls, String description, String knowledgebase, Integer crawlDepth, List<String> filters) {
+        this.agents.addWebPages(this.name, urls, description, knowledgebase, crawlDepth, filters);
+    }
+
+    /**
+     * Add a web page to the agent.
+     *
+     * @param url - URL
+     * @param description - description of the web page
+     * @param knowledgebase - knowledgebase
+     * @param crawlDepth - crawl depth
+     * @param filters - list of filters
+     */
+    public void addWebPage(String url, String description, String knowledgebase, Integer crawlDepth, List<String> filters) {
+        this.agents.addWebPage(this.name, url, description, knowledgebase, crawlDepth, filters);
+    }
+
+    /**
+     * Add a database to the agent.
+     *
+     * @param database - database
+     * @param table - list of tables
+     * @param description - description of the database
+     */
+    public void addDatabase(String database, List<String> table, String description) {
+        this.agents.addDatabase(this.name, database, table, description);
+    }
 }
