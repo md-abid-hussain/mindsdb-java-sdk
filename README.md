@@ -10,7 +10,7 @@ To use the MindsDB Java SDK, include the following dependency in your `pom.xml`:
 <dependency>
     <groupId>com.mindsdb</groupId>
     <artifactId>mindsdb-java-sdk</artifactId>
-    <version>1.0.2</version>
+    <version>1.1.0</version>
 </dependency>
 ```
 
@@ -238,13 +238,9 @@ public class Main {
 }
 ```
 
-## Examples
-
-You can find more examples in the [examples directory](https://github.com/mindsdb/mindsdb_java_sdk/tree/staging/examples).
-
 ## API Documentation
 
-The API documentation for the MindsDB SDK can be found at [https://mindsdb.github.io/mindsdb_java_sdk/](https://mindsdb.github.io/mindsdb_java_sdk/).
+The API documentation for the MindsDB SDK can be found at [md-abid-hussain.github.io/mindsdb-java-sdk/](https://md-abid-hussain.github.io/mindsdb-java-sdk/).
 
 ### Generating API docs locally:
 
@@ -266,8 +262,8 @@ mvn test
 
 ## Contributing
 
-We welcome contributions to the MindsDB SDK. If you'd like to contribute, please refer to the contribution guidelines for more information.
+We welcome contributions to the MindsDB Java SDK. If you'd like to contribute, please refer to the contribution guidelines for more information.
 
 ## License
 
-The MindsDB SDK is licensed under the MIT License. Feel free to use and modify it according to your needs.
+The MindsDB Java SDK is licensed under the GNU License. Feel free to use and modify it according to your needs.
