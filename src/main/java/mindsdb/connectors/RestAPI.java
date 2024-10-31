@@ -759,17 +759,14 @@ public final class RestAPI {
     public JsonObject getFileMetadata(String name) throws UnirestException {
         HttpResponse<String> response = session.get(url + "/api/files").asString();
 
-        if (response.getStatus() >= 400) {
-            throw new RuntimeException("Failed to retrieve file metadata: " + response.getBody());
-        }
-
+        raiseForStatus(response);
         JsonObject[] allFileMetadata = gson.fromJson(response.getBody(), JsonObject[].class);
         for (JsonObject metadata : allFileMetadata) {
             if (name.equals(metadata.get("name").getAsString())) {
                 return metadata;
             }
         }
-        throw new RuntimeException("File not found: " + name);
+        throw new HttpException(404, "File not found");
     }
 
 }

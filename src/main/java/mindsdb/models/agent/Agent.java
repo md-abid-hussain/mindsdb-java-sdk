@@ -208,6 +208,18 @@ public class Agent {
     }
 
     /**
+     * Generates a completion for the given message.
+     *
+     * @param input - input message
+     * @param inputColumnName - input column name
+     * @return An AgentCompletion object containing the result of the
+     * completion.
+     */
+    public AgentCompletion completion(String input, String inputColumnName) {
+        return this.completion(List.of(Map.of(inputColumnName, input)));
+    }
+
+    /**
      * Add files to the agent.
      *
      * @param filePaths - list of file paths
